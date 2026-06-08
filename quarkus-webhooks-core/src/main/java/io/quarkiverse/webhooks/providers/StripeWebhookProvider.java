@@ -8,6 +8,8 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class StripeWebhookProvider implements WebhookProvider {
@@ -37,35 +39,11 @@ public class StripeWebhookProvider implements WebhookProvider {
         if (signatureHeader == null || signatureHeader.isBlank()) {
             throw new WebhookSignatureException("stripe", "missing Stripe-Signature header");
         }
-        String timestamp = null;
-        java.util.List<String> signatures = new java.util.ArrayList<>();
-        for (String part : signatureHeader.split(",")) {
-            part = part.trim();
-            if (part.startsWith("t=")) {
-                timestamp = part.substring(2);
-            } else if (part.startsWith("v1=")) {
-                signatures.add(part.substring(3));
-            }
-        }
-        if (timestamp == null) {
-            throw new WebhookSignatureException("stripe", "missing timestamp (t=) in Stripe-Signature");
-        }
-        if (signatures.isEmpty()) {
-            throw new WebhookSignatureException("stripe", "no v1= signatures found in Stripe-Signature");
-        }
-        try {
-            long ts = Long.parseLong(timestamp);
-            long now = Instant.now().getEpochSecond();
-            if (Math.abs(now - ts) > replayWindowSeconds) {
-                throw new WebhookSignatureException("stripe",
-                        "timestamp too old or too far in the future (window=" + replayWindowSeconds + "s)");
-            }
-        } catch (NumberFormatException e) {
-            throw new WebhookSignatureException("stripe", "invalid timestamp format: " + timestamp);
-        }
-        String signedPayload = timestamp + "." + new String(rawBody, StandardCharsets.UTF_8);
+        ParsedSignature parsed = parseSignatureHeader(signatureHeader);
+        validateTimestamp(parsed.timestamp());
+        String signedPayload = parsed.timestamp() + "." + new String(rawBody, StandardCharsets.UTF_8);
         byte[] expected = computeHmac(signedPayload.getBytes(StandardCharsets.UTF_8), secret);
-        for (String sig : signatures) {
+        for (String sig : parsed.signatures()) {
             byte[] received = hexToBytes(sig);
             if (received != null && MessageDigest.isEqual(expected, received)) {
                 return;
@@ -91,6 +69,41 @@ public class StripeWebhookProvider implements WebhookProvider {
             return extractJsonField(json, "type");
         } catch (Exception ignored) {
             return null;
+        }
+    }
+
+    private record ParsedSignature(String timestamp, List<String> signatures) {}
+
+    private ParsedSignature parseSignatureHeader(String header) {
+        String timestamp = null;
+        List<String> signatures = new ArrayList<>();
+        for (String rawPart : header.split(",")) {
+            String part = rawPart.trim();
+            if (part.startsWith("t=")) {
+                timestamp = part.substring(2);
+            } else if (part.startsWith("v1=")) {
+                signatures.add(part.substring(3));
+            }
+        }
+        if (timestamp == null) {
+            throw new WebhookSignatureException("stripe", "missing timestamp (t=) in Stripe-Signature");
+        }
+        if (signatures.isEmpty()) {
+            throw new WebhookSignatureException("stripe", "no v1= signatures found in Stripe-Signature");
+        }
+        return new ParsedSignature(timestamp, signatures);
+    }
+
+    private void validateTimestamp(String timestamp) {
+        try {
+            long ts = Long.parseLong(timestamp);
+            long now = Instant.now().getEpochSecond();
+            if (Math.abs(now - ts) > replayWindowSeconds) {
+                throw new WebhookSignatureException("stripe",
+                        "timestamp too old or too far in the future (window=" + replayWindowSeconds + "s)");
+            }
+        } catch (NumberFormatException e) {
+            throw new WebhookSignatureException("stripe", "invalid timestamp format: " + timestamp);
         }
     }
 

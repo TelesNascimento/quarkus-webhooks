@@ -76,7 +76,7 @@ public class WebhookRouteHandler {
 
         // Convert headers to Map<String, String> (Vert.x MultiMap → plain Map)
         Map<String, String> headers = new HashMap<>();
-        ctx.request().headers().forEach(e -> headers.put(e.getKey(), e.getValue()));
+        ctx.request().headers().forEach(entry -> headers.put(entry.getKey(), entry.getValue()));
 
         // Resolve secret via MicroProfile Config: quarkus.webhooks.providers.{name}.secret
         String secret = config.getOptionalValue(

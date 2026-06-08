@@ -41,16 +41,7 @@ public class StandardWebhooksProvider implements WebhookProvider {
         String timestamp = findHeader(headers, HEADER_TIMESTAMP);
         String signatureHeader = findHeader(headers, HEADER_SIGNATURE);
         validateRequiredHeaders(webhookId, timestamp, signatureHeader);
-        try {
-            long ts = Long.parseLong(timestamp);
-            long now = Instant.now().getEpochSecond();
-            if (Math.abs(now - ts) > replayWindowSeconds) {
-                throw new WebhookSignatureException("standard",
-                        "timestamp too old or in the future (window=" + replayWindowSeconds + "s)");
-            }
-        } catch (NumberFormatException e) {
-            throw new WebhookSignatureException("standard", "invalid webhook-timestamp format: " + timestamp);
-        }
+        validateTimestamp(timestamp);
         byte[] keyBytes;
         try {
             String rawSecret;
@@ -67,8 +58,8 @@ public class StandardWebhooksProvider implements WebhookProvider {
         String signedContent = webhookId + "." + timestamp + "." + body;
         byte[] expected = computeHmac(signedContent.getBytes(StandardCharsets.UTF_8), keyBytes);
         String expectedBase64 = Base64.getEncoder().encodeToString(expected);
-        for (String sig : signatureHeader.split(" ")) {
-            sig = sig.trim();
+        for (String rawSig : signatureHeader.split(" ")) {
+            String sig = rawSig.trim();
             if (!sig.startsWith("v1,")) {
                 continue;
             }
@@ -104,6 +95,19 @@ public class StandardWebhooksProvider implements WebhookProvider {
             return mac.doFinal(data);
         } catch (Exception e) {
             throw new WebhookSignatureException("standard", "HMAC computation failed: " + e.getMessage());
+        }
+    }
+
+    private void validateTimestamp(String timestamp) {
+        try {
+            long ts = Long.parseLong(timestamp);
+            long now = Instant.now().getEpochSecond();
+            if (Math.abs(now - ts) > replayWindowSeconds) {
+                throw new WebhookSignatureException("standard",
+                        "timestamp too old or in the future (window=" + replayWindowSeconds + "s)");
+            }
+        } catch (NumberFormatException e) {
+            throw new WebhookSignatureException("standard", "invalid webhook-timestamp format: " + timestamp);
         }
     }
 
