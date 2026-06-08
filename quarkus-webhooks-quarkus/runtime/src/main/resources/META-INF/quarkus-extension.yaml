@@ -1,0 +1,14 @@
+---
+name: "Webhooks"
+artifact: ${project.groupId}:${project.artifactId}:${project.version}
+metadata:
+  short-name: "webhooks"
+  keywords:
+    - "webhooks"
+    - "stripe"
+    - "adyen"
+    - "signature-verification"
+  categories:
+    - "integration"
+  status: "experimental"
+  guide: "https://github.com/TelesNascimento25/quarkus-webhooks"

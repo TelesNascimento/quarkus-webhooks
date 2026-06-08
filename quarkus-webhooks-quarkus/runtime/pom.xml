@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.quarkiverse.webhooks</groupId>
+        <artifactId>quarkus-webhooks-quarkus-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>quarkus-webhooks</artifactId>
+    <name>Quarkus Webhooks - Runtime</name>
+    <description>
+        Quarkus extension runtime: CDI beans, config mapping and JAX-RS exception mapper
+        for webhook signature verification.
+    </description>
+
+    <dependencies>
+        <!-- Core library — framework-agnostic verification logic -->
+        <dependency>
+            <groupId>io.quarkiverse.webhooks</groupId>
+            <artifactId>quarkus-webhooks-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Quarkus CDI support -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc</artifactId>
+        </dependency>
+
+        <!-- JAX-RS / RESTEasy Reactive (ExceptionMapper, @Provider, Response) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest</artifactId>
+        </dependency>
+
+        <!-- Vert.x Reactive Routes (@Route, @RouteBase, RoutingContext) — raw body BEFORE JAX-RS -->
+        <!-- In Quarkus 3.x, quarkus-vertx-web was renamed to quarkus-reactive-routes -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-reactive-routes</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-extension-maven-plugin</artifactId>
+                <version>${quarkus.version}</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>extension-descriptor</goal>
+                        </goals>
+                        <phase>compile</phase>
+                        <configuration>
+                            <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}</deployment>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>io.quarkus</groupId>
+                            <artifactId>quarkus-extension-processor</artifactId>
+                            <version>${quarkus.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

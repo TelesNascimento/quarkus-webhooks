@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.quarkiverse.webhooks</groupId>
+        <artifactId>quarkus-webhooks-quarkus-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>quarkus-webhooks-deployment</artifactId>
+    <name>Quarkus Webhooks - Deployment</name>
+    <description>
+        Quarkus extension deployment module: build-time processors for the webhook extension.
+    </description>
+
+    <dependencies>
+        <!-- Runtime module -->
+        <dependency>
+            <groupId>io.quarkiverse.webhooks</groupId>
+            <artifactId>quarkus-webhooks</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Quarkus build-time core -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-core-deployment</artifactId>
+        </dependency>
+
+        <!-- Arc (CDI) build items — AdditionalBeanBuildItem -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-arc-deployment</artifactId>
+        </dependency>
+
+        <!-- REST deployment — mirrors quarkus-rest in the runtime module -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-deployment</artifactId>
+        </dependency>
+
+        <!-- Reactive Routes deployment (transitive from quarkus-rest) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-reactive-routes-deployment</artifactId>
+        </dependency>
+
+        <!-- Jackson deployment (transitive from quarkus-rest) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-jackson-deployment</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>io.quarkus</groupId>
+                            <artifactId>quarkus-extension-processor</artifactId>
+                            <version>${quarkus.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
