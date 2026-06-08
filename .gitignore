@@ -1,0 +1,16 @@
+target/
+*.class
+*.jar
+!**/src/main/**/*.jar
+!**/src/test/**/*.jar
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# Maven wrapper cache
+.mvn/wrapper/maven-wrapper.jar
