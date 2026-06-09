@@ -4,6 +4,7 @@ import io.quarkiverse.webhooks.WebhookProvider;
 import io.quarkiverse.webhooks.providers.AdyenWebhookProvider;
 import io.quarkiverse.webhooks.providers.GitHubWebhookProvider;
 import io.quarkiverse.webhooks.providers.ShopifyWebhookProvider;
+import io.quarkiverse.webhooks.providers.SlackWebhookProvider;
 import io.quarkiverse.webhooks.providers.StandardWebhooksProvider;
 import io.quarkiverse.webhooks.providers.StripeWebhookProvider;
 import io.quarkiverse.webhooks.runtime.config.WebhooksConfig;
@@ -49,5 +50,13 @@ public class WebhookProviders {
     @ApplicationScoped
     public WebhookProvider shopifyProvider() {
         return new ShopifyWebhookProvider();
+    }
+
+    @Produces
+    @ApplicationScoped
+    public WebhookProvider slackProvider() {
+        WebhooksConfig.ProviderConfig cfg = config.providers().get("slack");
+        int window = cfg != null ? (int) cfg.replayWindow().toSeconds() : 300;
+        return new SlackWebhookProvider(window);
     }
 }
