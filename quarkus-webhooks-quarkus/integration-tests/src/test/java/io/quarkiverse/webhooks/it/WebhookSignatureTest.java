@@ -89,7 +89,7 @@ class WebhookSignatureTest {
             .post("/webhooks/stripe")
         .then()
             .statusCode(401)
-            .body(containsString("timestamp too old"));
+            .body(containsString("webhook_signature_invalid"));
     }
 
     // =========================================================================

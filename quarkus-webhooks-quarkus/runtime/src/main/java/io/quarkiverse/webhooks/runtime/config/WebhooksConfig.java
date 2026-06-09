@@ -45,5 +45,12 @@ public interface WebhooksConfig {
          */
         @WithDefault("PT5M")
         Duration replayWindow();
+
+        /**
+         * Optional retiring secret for zero-downtime key rotation.
+         * When set, a webhook that fails verification with {@code secret} is retried
+         * with this secret (signature failures only — timestamp failures are not retried).
+         */
+        Optional<String> retiringSecret();
     }
 }

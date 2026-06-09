@@ -2,22 +2,24 @@ package io.quarkiverse.webhooks.providers;
 
 import io.quarkiverse.webhooks.WebhookProvider;
 import io.quarkiverse.webhooks.exception.WebhookSignatureException;
+import io.quarkiverse.webhooks.util.WebhookProviderUtils;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class StandardWebhooksProvider implements WebhookProvider {
 
     private static final String HEADER_ID = "webhook-id";
     private static final String HEADER_TIMESTAMP = "webhook-timestamp";
     private static final String HEADER_SIGNATURE = "webhook-signature";
-    private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final int DEFAULT_REPLAY_WINDOW_SECONDS = 300;
+    private static final int MIN_REPLAY_WINDOW_SECONDS = 60;
+    private static final int MAX_REPLAY_WINDOW_SECONDS = 3600;
     private static final String SECRET_PREFIX = "whsec_";
 
     private final int replayWindowSeconds;
@@ -27,6 +29,11 @@ public class StandardWebhooksProvider implements WebhookProvider {
     }
 
     public StandardWebhooksProvider(int replayWindowSeconds) {
+        if (replayWindowSeconds < MIN_REPLAY_WINDOW_SECONDS || replayWindowSeconds > MAX_REPLAY_WINDOW_SECONDS) {
+            throw new IllegalArgumentException(
+                    "replayWindowSeconds must be between " + MIN_REPLAY_WINDOW_SECONDS
+                            + " and " + MAX_REPLAY_WINDOW_SECONDS);
+        }
         this.replayWindowSeconds = replayWindowSeconds;
     }
 
@@ -37,9 +44,9 @@ public class StandardWebhooksProvider implements WebhookProvider {
 
     @Override
     public void verify(byte[] rawBody, Map<String, String> headers, String secret) {
-        String webhookId = findHeader(headers, HEADER_ID);
-        String timestamp = findHeader(headers, HEADER_TIMESTAMP);
-        String signatureHeader = findHeader(headers, HEADER_SIGNATURE);
+        String webhookId = WebhookProviderUtils.findHeader(headers, HEADER_ID);
+        String timestamp = WebhookProviderUtils.findHeader(headers, HEADER_TIMESTAMP);
+        String signatureHeader = WebhookProviderUtils.findHeader(headers, HEADER_SIGNATURE);
         validateRequiredHeaders(webhookId, timestamp, signatureHeader);
         validateTimestamp(timestamp);
         byte[] keyBytes;
@@ -56,7 +63,8 @@ public class StandardWebhooksProvider implements WebhookProvider {
         }
         String body = new String(rawBody, StandardCharsets.UTF_8);
         String signedContent = webhookId + "." + timestamp + "." + body;
-        byte[] expected = computeHmac(signedContent.getBytes(StandardCharsets.UTF_8), keyBytes);
+        byte[] expected = WebhookProviderUtils.computeHmac(
+                signedContent.getBytes(StandardCharsets.UTF_8), keyBytes, "standard");
         String expectedBase64 = Base64.getEncoder().encodeToString(expected);
         for (String rawSig : signatureHeader.split(" ")) {
             String sig = rawSig.trim();
@@ -74,35 +82,52 @@ public class StandardWebhooksProvider implements WebhookProvider {
     }
 
     @Override
+    public Map<String, String> sign(byte[] rawBody, String secret) {
+        String webhookId = UUID.randomUUID().toString();
+        long ts = Instant.now().getEpochSecond();
+        String rawSecret = secret.startsWith(SECRET_PREFIX) ? secret.substring(SECRET_PREFIX.length()) : secret;
+        byte[] keyBytes;
+        try {
+            keyBytes = Base64.getDecoder().decode(rawSecret);
+        } catch (IllegalArgumentException e) {
+            throw new WebhookSignatureException("standard", "invalid secret: must be Base64 encoded");
+        }
+        String body = new String(rawBody, StandardCharsets.UTF_8);
+        String signedContent = webhookId + "." + ts + "." + body;
+        byte[] hmac = WebhookProviderUtils.computeHmac(
+                signedContent.getBytes(StandardCharsets.UTF_8), keyBytes, "standard");
+        String sigBase64 = Base64.getEncoder().encodeToString(hmac);
+        Map<String, String> resultHeaders = new HashMap<>();
+        resultHeaders.put("webhook-id", webhookId);
+        resultHeaders.put("webhook-timestamp", String.valueOf(ts));
+        resultHeaders.put("webhook-signature", "v1," + sigBase64);
+        return resultHeaders;
+    }
+
+    @Override
     public String extractEventId(byte[] rawBody, Map<String, String> headers) {
-        return findHeader(headers, HEADER_ID);
+        return WebhookProviderUtils.findHeader(headers, HEADER_ID);
     }
 
     @Override
     public String extractEventType(byte[] rawBody, Map<String, String> headers) {
         try {
             String json = new String(rawBody, StandardCharsets.UTF_8);
-            return extractJsonField(json, "type");
+            return WebhookProviderUtils.extractJsonField(json, "type");
         } catch (Exception ignored) {
             return null;
-        }
-    }
-
-    private byte[] computeHmac(byte[] data, byte[] key) {
-        try {
-            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-            mac.init(new SecretKeySpec(key, HMAC_ALGORITHM));
-            return mac.doFinal(data);
-        } catch (Exception e) {
-            throw new WebhookSignatureException("standard", "HMAC computation failed: " + e.getMessage());
         }
     }
 
     private void validateTimestamp(String timestamp) {
         try {
             long ts = Long.parseLong(timestamp);
+            if (ts < 0) {
+                throw new WebhookSignatureException("standard", "invalid timestamp: negative value");
+            }
             long now = Instant.now().getEpochSecond();
-            if (Math.abs(now - ts) > replayWindowSeconds) {
+            long diff = Math.abs(now - ts);
+            if (diff > replayWindowSeconds) {
                 throw new WebhookSignatureException("standard",
                         "timestamp too old or in the future (window=" + replayWindowSeconds + "s)");
             }
@@ -121,47 +146,5 @@ public class StandardWebhooksProvider implements WebhookProvider {
         if (signatureHeader == null || signatureHeader.isBlank()) {
             throw new WebhookSignatureException("standard", "missing webhook-signature header");
         }
-    }
-
-    private String findHeader(Map<String, String> headers, String name) {
-        if (headers == null) {
-            return null;
-        }
-        return headers.entrySet().stream()
-                .filter(entry -> name.equalsIgnoreCase(entry.getKey()))
-                .map(Map.Entry::getValue)
-                .findFirst()
-                .orElse(null);
-    }
-
-    private String extractJsonField(String json, String field) {
-        String key = "\"" + field + "\"";
-        int idx = json.indexOf(key);
-        if (idx < 0) {
-            return null;
-        }
-        int colon = json.indexOf(':', idx + key.length());
-        if (colon < 0) {
-            return null;
-        }
-        int start = colon + 1;
-        while (start < json.length() && Character.isWhitespace(json.charAt(start))) {
-            start++;
-        }
-        if (start >= json.length()) {
-            return null;
-        }
-        if (json.charAt(start) == '"') {
-            int end = json.indexOf('"', start + 1);
-            if (end < 0) {
-                return null;
-            }
-            return json.substring(start + 1, end);
-        }
-        int end = start;
-        while (end < json.length() && ",}]".indexOf(json.charAt(end)) < 0) {
-            end++;
-        }
-        return json.substring(start, end).trim();
     }
 }

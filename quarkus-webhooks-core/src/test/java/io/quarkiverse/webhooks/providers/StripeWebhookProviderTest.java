@@ -142,10 +142,10 @@ class StripeWebhookProviderTest {
     @Test
     @DisplayName("custom replay window — accepts within window, rejects outside")
     void customReplayWindow_enforcesWindow() throws Exception {
-        // Provider with 10-second window
-        StripeWebhookProvider strictProvider = new StripeWebhookProvider(10);
+        // Provider with 60-second window (minimum allowed)
+        StripeWebhookProvider strictProvider = new StripeWebhookProvider(60);
         byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
-        long oldTimestamp = Instant.now().getEpochSecond() - 20; // 20s ago
+        long oldTimestamp = Instant.now().getEpochSecond() - 70; // 70s ago, outside 60s window
         String sig = computeStripeSignature(oldTimestamp, body, SECRET);
         Map<String, String> headers = Map.of(
                 "stripe-signature", "t=" + oldTimestamp + ",v1=" + sig

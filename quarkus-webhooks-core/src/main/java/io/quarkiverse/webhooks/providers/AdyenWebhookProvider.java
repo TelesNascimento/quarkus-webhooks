@@ -2,9 +2,8 @@ package io.quarkiverse.webhooks.providers;
 
 import io.quarkiverse.webhooks.WebhookProvider;
 import io.quarkiverse.webhooks.exception.WebhookSignatureException;
+import io.quarkiverse.webhooks.util.WebhookProviderUtils;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
@@ -12,7 +11,6 @@ import java.util.Map;
 
 public class AdyenWebhookProvider implements WebhookProvider {
 
-    private static final String HMAC_ALGORITHM = "HmacSHA256";
     private static final String HMAC_FIELD = "hmacSignature";
 
     @Override
@@ -32,11 +30,12 @@ public class AdyenWebhookProvider implements WebhookProvider {
             throw new WebhookSignatureException("adyen", "missing hmacSignature in additionalData");
         }
         String dataToSign = buildDataToSign(item);
-        byte[] keyBytes = hexToBytes(secret);
+        byte[] keyBytes = WebhookProviderUtils.hexToBytes(secret);
         if (keyBytes == null) {
             throw new WebhookSignatureException("adyen", "invalid HMAC key - must be hex-encoded string");
         }
-        byte[] computedHmac = computeHmac(dataToSign.getBytes(StandardCharsets.UTF_8), keyBytes);
+        byte[] computedHmac = WebhookProviderUtils.computeHmac(
+                dataToSign.getBytes(StandardCharsets.UTF_8), keyBytes, "adyen");
         String computedBase64 = Base64.getEncoder().encodeToString(computedHmac);
         if (!MessageDigest.isEqual(
                 computedBase64.getBytes(StandardCharsets.UTF_8),
@@ -53,7 +52,7 @@ public class AdyenWebhookProvider implements WebhookProvider {
             if (item == null) {
                 return null;
             }
-            return extractJsonField(item, "pspReference");
+            return WebhookProviderUtils.extractJsonField(item, "pspReference");
         } catch (Exception ignored) {
             return null;
         }
@@ -67,7 +66,7 @@ public class AdyenWebhookProvider implements WebhookProvider {
             if (item == null) {
                 return null;
             }
-            return extractJsonField(item, "eventCode");
+            return WebhookProviderUtils.extractJsonField(item, "eventCode");
         } catch (Exception ignored) {
             return null;
         }
@@ -88,7 +87,7 @@ public class AdyenWebhookProvider implements WebhookProvider {
     }
 
     private String getFieldOrEmpty(String json, String field) {
-        String val = extractJsonField(json, field);
+        String val = WebhookProviderUtils.extractJsonField(json, field);
         if (val != null) {
             return val;
         }
@@ -109,7 +108,7 @@ public class AdyenWebhookProvider implements WebhookProvider {
             return "";
         }
         String amountBlock = json.substring(braceOpen, braceClose + 1);
-        String val = extractJsonField(amountBlock, subField);
+        String val = WebhookProviderUtils.extractJsonField(amountBlock, subField);
         if (val != null) {
             return val;
         }
@@ -154,63 +153,6 @@ public class AdyenWebhookProvider implements WebhookProvider {
             return null;
         }
         String block = json.substring(braceOpen, braceClose + 1);
-        return extractJsonField(block, field);
-    }
-
-    private byte[] computeHmac(byte[] data, byte[] keyBytes) {
-        try {
-            Mac mac = Mac.getInstance(HMAC_ALGORITHM);
-            mac.init(new SecretKeySpec(keyBytes, HMAC_ALGORITHM));
-            return mac.doFinal(data);
-        } catch (Exception e) {
-            throw new WebhookSignatureException("adyen", "HMAC computation failed: " + e.getMessage());
-        }
-    }
-
-    private byte[] hexToBytes(String hex) {
-        if (hex == null || hex.length() % 2 != 0) {
-            return null;
-        }
-        try {
-            byte[] result = new byte[hex.length() / 2];
-            for (int i = 0; i < hex.length(); i += 2) {
-                result[i / 2] = (byte) Integer.parseInt(hex.substring(i, i + 2), 16);
-            }
-            return result;
-        } catch (NumberFormatException ignored) {
-            return null;
-        }
-    }
-
-    private String extractJsonField(String json, String field) {
-        String key = "\"" + field + "\"";
-        int idx = json.indexOf(key);
-        if (idx < 0) {
-            return null;
-        }
-        int colon = json.indexOf(':', idx + key.length());
-        if (colon < 0) {
-            return null;
-        }
-        int start = colon + 1;
-        while (start < json.length() && Character.isWhitespace(json.charAt(start))) {
-            start++;
-        }
-        if (start >= json.length()) {
-            return null;
-        }
-        char first = json.charAt(start);
-        if (first == '"') {
-            int end = json.indexOf('"', start + 1);
-            if (end < 0) {
-                return null;
-            }
-            return json.substring(start + 1, end);
-        }
-        int end = start;
-        while (end < json.length() && ",}]".indexOf(json.charAt(end)) < 0) {
-            end++;
-        }
-        return json.substring(start, end).trim();
+        return WebhookProviderUtils.extractJsonField(block, field);
     }
 }
