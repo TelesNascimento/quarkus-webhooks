@@ -62,6 +62,13 @@ class GitHubWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
+    @DisplayName("verify: null body throws WebhookSignatureException")
+    void verify_nullBody_throws() {
+        assertThatThrownBy(() -> provider.verify(null, Map.of("X-Hub-Signature-256", "sha256=abc"), SECRET))
+                .isInstanceOf(WebhookSignatureException.class);
+    }
+
+    @Test
     @DisplayName("verify() — wrong secret → WebhookSignatureException")
     void verify_wrongSecret_throws() {
         assertThatThrownBy(() -> provider.verify(validBody(), validHeaders(), "wrong_secret"))
@@ -77,8 +84,8 @@ class GitHubWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — header case insensitive (lowercase)")
-    void verify_headerCaseInsensitive() {
+    @DisplayName("verify() — header case insensitive (lowercase) — passes")
+    void verify_headerCaseInsensitive_passes() {
         byte[] body = validBody();
         byte[] hmac = WebhookProviderUtils.computeHmac(body, SECRET, "github");
         String hexHmac = WebhookProviderUtils.bytesToHex(hmac);
@@ -104,16 +111,16 @@ class GitHubWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("sign() — produces headers that verify correctly")
-    void sign_roundtrip() {
+    @DisplayName("sign() — roundtrip verifies successfully")
+    void sign_roundtrip_verifiesSuccessfully() {
         byte[] body = validBody();
         Map<String, String> headers = provider.sign(body, SECRET);
         assertThatCode(() -> provider.verify(body, headers, SECRET)).doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("sign() — returns Map with X-Hub-Signature-256 starting with sha256=")
-    void sign_headerFormat() {
+    @DisplayName("sign() — header format contains sha256= prefix")
+    void sign_headerFormat_containsSha256Prefix() {
         Map<String, String> headers = provider.sign(validBody(), SECRET);
         assertThat(headers).containsKey("X-Hub-Signature-256");
         assertThat(headers.get("X-Hub-Signature-256")).startsWith("sha256=");

@@ -65,6 +65,13 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
+    @DisplayName("verify: null body throws WebhookSignatureException")
+    void verify_nullBody_throws() {
+        assertThatThrownBy(() -> provider.verify(null, Map.of("X-Slack-Signature", "v0=abc", "X-Slack-Request-Timestamp", "1234567890"), SECRET))
+                .isInstanceOf(WebhookSignatureException.class);
+    }
+
+    @Test
     @DisplayName("verify() — missing X-Slack-Signature → WebhookSignatureException")
     void verify_missingSignatureHeader_throws() {
         Map<String, String> headers = Map.of(
@@ -152,8 +159,8 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — header case insensitive")
-    void verify_headerCaseInsensitive() {
+    @DisplayName("verify() — header case insensitive — passes")
+    void verify_headerCaseInsensitive_passes() {
         long ts = Instant.now().getEpochSecond();
         String bodyStr = new String(validBody(), StandardCharsets.UTF_8);
         String signedContent = "v0:" + ts + ":" + bodyStr;
@@ -174,16 +181,16 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("sign() — produces headers that verify correctly")
-    void sign_roundtrip() {
+    @DisplayName("sign() — roundtrip verifies successfully")
+    void sign_roundtrip_verifiesSuccessfully() {
         byte[] body = validBody();
         Map<String, String> headers = provider.sign(body, SECRET);
         assertThatCode(() -> provider.verify(body, headers, SECRET)).doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("sign() — returns Map with X-Slack-Signature and X-Slack-Request-Timestamp")
-    void sign_headerFormat() {
+    @DisplayName("sign() — header format contains v0= prefix")
+    void sign_headerFormat_containsV0Prefix() {
         Map<String, String> headers = provider.sign(validBody(), SECRET);
         assertThat(headers).containsKey("X-Slack-Signature");
         assertThat(headers).containsKey("X-Slack-Request-Timestamp");
@@ -191,8 +198,8 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("extractEventType() — url_verification payload → returns 'url_verification'")
-    void extractEventType_urlVerification() {
+    @DisplayName("extractEventType() — url_verification payload — returns 'url_verification'")
+    void extractEventType_urlVerification_returnsUrlVerification() {
         byte[] body = "{\"type\":\"url_verification\",\"challenge\":\"abc123\"}".getBytes(StandardCharsets.UTF_8);
         assertThat(provider.extractEventType(body, Map.of())).isEqualTo("url_verification");
     }
@@ -206,8 +213,8 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("extractEventType() — event_callback without event.type → returns 'event_callback'")
-    void extractEventType_eventCallbackNoInnerType() {
+    @DisplayName("extractEventType() — event_callback without inner type — returns 'event_callback'")
+    void extractEventType_eventCallbackNoInnerType_returnsEventCallback() {
         byte[] body = "{\"type\":\"event_callback\",\"event\":{\"text\":\"hi\"}}"
                 .getBytes(StandardCharsets.UTF_8);
         String result = provider.extractEventType(body, Map.of());

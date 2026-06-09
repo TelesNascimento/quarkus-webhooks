@@ -243,31 +243,70 @@ class WebhookSignatureTest {
 
     private String jsonStr(String json, String field) {
         String k = "\"" + field + "\"";
-        int i = json.indexOf(k); if (i < 0) return "";
-        int c = json.indexOf(':', i + k.length()); if (c < 0) return "";
-        int s = json.indexOf('"', c + 1); if (s < 0) return "";
-        int e = json.indexOf('"', s + 1); return e < 0 ? "" : json.substring(s+1, e);
+        int i = json.indexOf(k);
+        if (i < 0) {
+            return "";
+        }
+        int c = json.indexOf(':', i + k.length());
+        if (c < 0) {
+            return "";
+        }
+        int s = json.indexOf('"', c + 1);
+        if (s < 0) {
+            return "";
+        }
+        int e = json.indexOf('"', s + 1);
+        if (e < 0) {
+            return "";
+        } else {
+            return json.substring(s + 1, e);
+        }
     }
 
     private String amountField(String json, String sub) {
-        int ai = json.indexOf("\"amount\""); if (ai < 0) return "";
-        int bo = json.indexOf('{', ai); if (bo < 0) return "";
-        int bc = json.indexOf('}', bo); if (bc < 0) return "";
-        String block = json.substring(bo, bc+1);
+        int ai = json.indexOf("\"amount\"");
+        if (ai < 0) {
+            return "";
+        }
+        int bo = json.indexOf('{', ai);
+        if (bo < 0) {
+            return "";
+        }
+        int bc = json.indexOf('}', bo);
+        if (bc < 0) {
+            return "";
+        }
+        String block = json.substring(bo, bc + 1);
         // Extract the field value — handles both strings and numbers
         String key = "\"" + sub + "\"";
-        int ki = block.indexOf(key); if (ki < 0) return "";
-        int colon = block.indexOf(':', ki + key.length()); if (colon < 0) return "";
+        int ki = block.indexOf(key);
+        if (ki < 0) {
+            return "";
+        }
+        int colon = block.indexOf(':', ki + key.length());
+        if (colon < 0) {
+            return "";
+        }
         int start = colon + 1;
-        while (start < block.length() && Character.isWhitespace(block.charAt(start))) start++;
-        if (start >= block.length()) return "";
+        while (start < block.length() && Character.isWhitespace(block.charAt(start))) {
+            start++;
+        }
+        if (start >= block.length()) {
+            return "";
+        }
         char first = block.charAt(start);
         if (first == '"') {
             int end = block.indexOf('"', start + 1);
-            return end < 0 ? "" : block.substring(start + 1, end);
+            if (end < 0) {
+                return "";
+            } else {
+                return block.substring(start + 1, end);
+            }
         } else {
             int end = start;
-            while (end < block.length() && ",}]".indexOf(block.charAt(end)) < 0) end++;
+            while (end < block.length() && ",}]".indexOf(block.charAt(end)) < 0) {
+                end++;
+            }
             return block.substring(start, end).trim();
         }
     }

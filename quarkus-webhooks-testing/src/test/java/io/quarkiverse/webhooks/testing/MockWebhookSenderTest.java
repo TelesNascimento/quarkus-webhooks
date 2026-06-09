@@ -118,8 +118,8 @@ class MockWebhookSenderTest {
     }
 
     @Test
-    @DisplayName("header() — custom header overrides signed header")
-    void header_overridesSignedHeader() {
+    @DisplayName("header() — custom header overrides signed header — uses custom value")
+    void header_overridesSignedHeader_usesCustomValue() {
         MockWebhookSender.ProviderBuilder builder = sender.provider("stripe")
                 .secret("x")
                 .payload("{}")

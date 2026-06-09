@@ -63,6 +63,13 @@ class ShopifyWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
+    @DisplayName("verify: null body throws WebhookSignatureException")
+    void verify_nullBody_throws() {
+        assertThatThrownBy(() -> provider.verify(null, Map.of("X-Shopify-Hmac-SHA256", "abc"), SECRET))
+                .isInstanceOf(WebhookSignatureException.class);
+    }
+
+    @Test
     @DisplayName("verify() — hex signature (common mistake) → WebhookSignatureException")
     void verify_hexInsteadOfBase64_throws() {
         byte[] body = validBody();
@@ -98,8 +105,8 @@ class ShopifyWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — header case insensitive")
-    void verify_headerCaseInsensitive() {
+    @DisplayName("verify() — header case insensitive — passes")
+    void verify_headerCaseInsensitive_passes() {
         byte[] body = validBody();
         byte[] hmac = WebhookProviderUtils.computeHmac(body, SECRET, "shopify");
         String base64Hmac = Base64.getEncoder().encodeToString(hmac);
@@ -122,8 +129,8 @@ class ShopifyWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("sign() — produces headers that verify correctly")
-    void sign_roundtrip() {
+    @DisplayName("sign() — roundtrip verifies successfully")
+    void sign_roundtrip_verifiesSuccessfully() {
         byte[] body = validBody();
         Map<String, String> headers = provider.sign(body, SECRET);
         assertThatCode(() -> provider.verify(body, headers, SECRET)).doesNotThrowAnyException();
