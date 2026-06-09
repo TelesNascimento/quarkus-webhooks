@@ -2,6 +2,8 @@ package io.quarkiverse.webhooks.runtime;
 
 import io.quarkiverse.webhooks.WebhookProvider;
 import io.quarkiverse.webhooks.providers.AdyenWebhookProvider;
+import io.quarkiverse.webhooks.providers.GitHubWebhookProvider;
+import io.quarkiverse.webhooks.providers.ShopifyWebhookProvider;
 import io.quarkiverse.webhooks.providers.StandardWebhooksProvider;
 import io.quarkiverse.webhooks.providers.StripeWebhookProvider;
 import io.quarkiverse.webhooks.runtime.config.WebhooksConfig;
@@ -35,5 +37,17 @@ public class WebhookProviders {
         WebhooksConfig.ProviderConfig cfg = config.providers().get("standard");
         int window = cfg != null ? (int) cfg.replayWindow().toSeconds() : 300;
         return new StandardWebhooksProvider(window);
+    }
+
+    @Produces
+    @ApplicationScoped
+    public WebhookProvider githubProvider() {
+        return new GitHubWebhookProvider();
+    }
+
+    @Produces
+    @ApplicationScoped
+    public WebhookProvider shopifyProvider() {
+        return new ShopifyWebhookProvider();
     }
 }
