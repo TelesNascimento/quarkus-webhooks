@@ -9,21 +9,6 @@ import jakarta.ws.rs.ext.Provider;
 
 import io.quarkiverse.webhooks.exception.WebhookSignatureException;
 
-/**
- * JAX-RS {@link ExceptionMapper} that translates {@link WebhookSignatureException} into
- * an HTTP {@code 401 Unauthorized} JSON response.
- *
- * <p>Response body example:</p>
- * <pre>{@code
- * {
- *   "error":    "webhook_signature_invalid",
- *   "provider": "stripe",
- *   "message":  "no matching v1= signature found"
- * }
- * }</pre>
- *
- * <p>Registered as an unremovable CDI bean by {@code WebhooksProcessor} at build time.</p>
- */
 @Provider
 public class WebhookSignatureExceptionMapper implements ExceptionMapper<WebhookSignatureException> {
 

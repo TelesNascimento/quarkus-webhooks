@@ -30,7 +30,7 @@ public class GitHubWebhookProvider implements WebhookProvider {
         }
         if (!signatureHeader.startsWith(SIGNATURE_PREFIX)) {
             throw new WebhookSignatureException("github",
-                    "invalid signature format — expected sha256= prefix");
+                    "invalid signature format - expected sha256= prefix");
         }
         String receivedHex = signatureHeader.substring(SIGNATURE_PREFIX.length());
         byte[] expected = WebhookProviderUtils.computeHmac(rawBody, secret, "github");

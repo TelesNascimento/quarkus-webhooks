@@ -1,5 +1,9 @@
 package io.quarkiverse.webhooks.runtime;
 
+import java.time.Duration;
+
+import org.eclipse.microprofile.config.Config;
+
 import io.quarkiverse.webhooks.WebhookProvider;
 import io.quarkiverse.webhooks.providers.AdyenWebhookProvider;
 import io.quarkiverse.webhooks.providers.GitHubWebhookProvider;
@@ -7,7 +11,6 @@ import io.quarkiverse.webhooks.providers.ShopifyWebhookProvider;
 import io.quarkiverse.webhooks.providers.SlackWebhookProvider;
 import io.quarkiverse.webhooks.providers.StandardWebhooksProvider;
 import io.quarkiverse.webhooks.providers.StripeWebhookProvider;
-import io.quarkiverse.webhooks.runtime.config.WebhooksConfig;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.inject.Inject;
@@ -15,14 +18,15 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class WebhookProviders {
 
+    private static final int DEFAULT_WINDOW_SECONDS = 300;
+
     @Inject
-    WebhooksConfig config;
+    Config config;
 
     @Produces
     @ApplicationScoped
     public WebhookProvider stripeProvider() {
-        WebhooksConfig.ProviderConfig cfg = config.providers().get("stripe");
-        int window = cfg != null ? (int) cfg.replayWindow().toSeconds() : 300;
+        int window = replayWindow("stripe");
         return new StripeWebhookProvider(window);
     }
 
@@ -35,8 +39,7 @@ public class WebhookProviders {
     @Produces
     @ApplicationScoped
     public WebhookProvider standardProvider() {
-        WebhooksConfig.ProviderConfig cfg = config.providers().get("standard");
-        int window = cfg != null ? (int) cfg.replayWindow().toSeconds() : 300;
+        int window = replayWindow("standard");
         return new StandardWebhooksProvider(window);
     }
 
@@ -55,8 +58,14 @@ public class WebhookProviders {
     @Produces
     @ApplicationScoped
     public WebhookProvider slackProvider() {
-        WebhooksConfig.ProviderConfig cfg = config.providers().get("slack");
-        int window = cfg != null ? (int) cfg.replayWindow().toSeconds() : 300;
+        int window = replayWindow("slack");
         return new SlackWebhookProvider(window);
+    }
+
+    private int replayWindow(String providerName) {
+        String key = "quarkus.webhooks.providers." + providerName + ".replay-window";
+        return config.getOptionalValue(key, Duration.class)
+                .map(d -> (int) d.toSeconds())
+                .orElse(DEFAULT_WINDOW_SECONDS);
     }
 }

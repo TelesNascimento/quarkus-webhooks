@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.eclipse.microprofile.config.Config;
 import org.jboss.logging.Logger;
 
 import io.quarkiverse.webhooks.WebhookProvider;
 import io.quarkiverse.webhooks.exception.WebhookSignatureException;
-import io.quarkiverse.webhooks.runtime.config.WebhooksConfig;
 import io.quarkus.vertx.web.Route;
 import io.quarkus.vertx.web.RouteBase;
 import io.smallrye.common.annotation.Blocking;
@@ -32,7 +32,7 @@ public class WebhookRouteHandler {
     Instance<WebhookProvider> providers;
 
     @Inject
-    WebhooksConfig webhooksConfig;
+    Config config;
 
     @Route(path = "/:provider", methods = Route.HttpMethod.POST)
     @Blocking
@@ -69,13 +69,10 @@ public class WebhookRouteHandler {
         Map<String, String> headers = new HashMap<>();
         ctx.request().headers().forEach(entry -> headers.put(entry.getKey(), entry.getValue()));
 
-        WebhooksConfig.ProviderConfig providerConfig = webhooksConfig.providers().get(providerName);
-        String secret = (providerConfig != null && providerConfig.secret().isPresent())
-                ? providerConfig.secret().get()
-                : "";
-        String retiringSecret = (providerConfig != null && providerConfig.retiringSecret().isPresent())
-                ? providerConfig.retiringSecret().get()
-                : null;
+        String secretKey = "quarkus.webhooks.providers." + providerName + ".secret";
+        String retiringKey = "quarkus.webhooks.providers." + providerName + ".retiring-secret";
+        String secret = config.getOptionalValue(secretKey, String.class).orElse("");
+        String retiringSecret = config.getOptionalValue(retiringKey, String.class).orElse(null);
 
         try {
             verifyWithFallback(provider, rawBody, headers, secret, retiringSecret);
@@ -116,7 +113,7 @@ public class WebhookRouteHandler {
             }
             try {
                 provider.verify(rawBody, headers, retiringSecret);
-                LOG.warnf("Webhook verified with retiring secret [provider=%s] — rotate your secrets",
+                LOG.warnf("Webhook verified with retiring secret [provider=%s] - rotate your secrets",
                         provider.name());
             } catch (WebhookSignatureException ignored) {
                 throw e;
@@ -131,9 +128,9 @@ public class WebhookRouteHandler {
     }
 
     private WebhookProvider findProvider(String name) {
-        for (WebhookProvider p : providers) {
-            if (p.name().equals(name)) {
-                return p;
+        for (WebhookProvider provider : providers) {
+            if (provider.name().equals(name)) {
+                return provider;
             }
         }
         return null;

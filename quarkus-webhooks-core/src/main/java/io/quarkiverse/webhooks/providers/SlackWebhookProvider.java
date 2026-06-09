@@ -56,7 +56,7 @@ public class SlackWebhookProvider implements WebhookProvider {
         validateTimestamp(timestampHeader);
         if (!signatureHeader.startsWith(SIGNATURE_PREFIX)) {
             throw new WebhookSignatureException("slack",
-                    "invalid signature format — expected v0= prefix");
+                    "invalid signature format - expected v0= prefix");
         }
         String receivedHex = signatureHeader.substring(SIGNATURE_PREFIX.length());
         String body = new String(rawBody, StandardCharsets.UTF_8);

@@ -17,9 +17,6 @@ public final class WebhookProviderUtils {
 
     private WebhookProviderUtils() {}
 
-    /**
-     * Case-insensitive, null-safe header lookup.
-     */
     public static String findHeader(Map<String, String> headers, String name) {
         if (headers == null || name == null) {
             return null;
@@ -32,12 +29,6 @@ public final class WebhookProviderUtils {
         return null;
     }
 
-    /**
-     * Converts a hex string to bytes without timing oracle.
-     * ALWAYS returns byte[32] (HMAC-SHA256 size).
-     * Invalid input returns byte[32] filled with zeros.
-     * This enables constant-time comparison with MessageDigest.isEqual().
-     */
     public static byte[] hexToBytesSafe(String hex) {
         byte[] result = new byte[HMAC_SHA256_BYTES];
         boolean valid = (hex != null && hex.length() == HMAC_SHA256_HEX_CHARS);
@@ -58,11 +49,6 @@ public final class WebhookProviderUtils {
         return result;
     }
 
-    /**
-     * Converts hex to bytes. Returns null for invalid input.
-     * Use hexToBytesSafe() for signature comparison (constant-time).
-     * Use this only for non-security-critical hex conversion (e.g. key parsing).
-     */
     public static byte[] hexToBytes(String hex) {
         if (hex == null || hex.length() % 2 != 0) {
             return null;
@@ -78,9 +64,6 @@ public final class WebhookProviderUtils {
         }
     }
 
-    /**
-     * Converts bytes to lowercase hex string.
-     */
     public static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder(bytes.length * 2);
         for (byte b : bytes) {
@@ -89,11 +72,6 @@ public final class WebhookProviderUtils {
         return sb.toString();
     }
 
-    /**
-     * Computes HMAC-SHA256.
-     *
-     * @throws WebhookSignatureException if computation fails
-     */
     public static byte[] computeHmac(byte[] data, byte[] keyBytes, String provider) {
         if (data == null) {
             throw new WebhookSignatureException(provider, "HMAC computation failed: data is null");
@@ -110,9 +88,6 @@ public final class WebhookProviderUtils {
         }
     }
 
-    /**
-     * Computes HMAC-SHA256 with a String secret (UTF-8 encoded).
-     */
     public static byte[] computeHmac(byte[] data, String secret, String provider) {
         if (secret == null) {
             throw new WebhookSignatureException(provider, "HMAC computation failed: secret is null");
@@ -120,11 +95,6 @@ public final class WebhookProviderUtils {
         return computeHmac(data, secret.getBytes(StandardCharsets.UTF_8), provider);
     }
 
-    /**
-     * Extracts a JSON field value with escape-aware parsing.
-     * Handles escaped quotes in string values and field names in other string values.
-     * Returns null if field not found or JSON is malformed.
-     */
     public static String extractJsonField(String json, String fieldName) {
         if (json == null || fieldName == null) {
             return null;
