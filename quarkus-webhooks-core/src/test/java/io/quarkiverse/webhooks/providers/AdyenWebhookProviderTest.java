@@ -167,6 +167,26 @@ class AdyenWebhookProviderTest {
         assertThat(provider.name()).isEqualTo("adyen");
     }
 
+    // --- BRACE-IN-STRING BUG ---
+
+    @Test
+    @DisplayName("extractEventType() — NotificationRequestItem with braces in description field")
+    void extractEventType_bracesInDescription_extractsCorrectly() {
+        // Descrição contém {} — bug antigo: extrai errado; correção: extrai correto
+        String json = "{\"notificationItems\":[{\"NotificationRequestItem\":{" +
+                "\"pspReference\":\"PSPR-001\"," +
+                "\"originalReference\":\"\"," +
+                "\"merchantAccountCode\":\"TestMerchant\"," +
+                "\"merchantReference\":\"order-{001}\"," +
+                "\"amount\":{\"value\":1000,\"currency\":\"EUR\"}," +
+                "\"eventCode\":\"AUTHORISATION\"," +
+                "\"success\":\"true\"," +
+                "\"additionalData\":{\"hmacSignature\":\"ignored\"}}}]}";
+        // Não deve lançar exceção e deve retornar o eventCode correto
+        String eventType = new AdyenWebhookProvider().extractEventType(json.getBytes(StandardCharsets.UTF_8), Map.of());
+        assertThat(eventType).isEqualTo("AUTHORISATION");
+    }
+
     // --- HELPERS ---
 
     private String buildNotificationItem(String pspRef, String origRef, String merchantCode,

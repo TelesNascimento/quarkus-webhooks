@@ -115,6 +115,14 @@ public class SlackWebhookProvider implements WebhookProvider {
     }
 
     private String extractNestedEventField(String json, String fieldName) {
+        String eventBlock = extractEventBlock(json);
+        if (eventBlock == null) {
+            return null;
+        }
+        return WebhookProviderUtils.extractJsonField(eventBlock, fieldName);
+    }
+
+    private String extractEventBlock(String json) {
         int eventIdx = json.indexOf("\"event\"");
         if (eventIdx < 0) {
             return null;
@@ -123,9 +131,16 @@ public class SlackWebhookProvider implements WebhookProvider {
         if (braceOpen < 0) {
             return null;
         }
+        int braceClose = findMatchingBrace(json, braceOpen);
+        if (braceClose < 0) {
+            return null;
+        }
+        return json.substring(braceOpen, braceClose + 1);
+    }
+
+    private int findMatchingBrace(String json, int braceOpen) {
         int depth = 0;
         boolean inString = false;
-        int braceClose = -1;
         for (int i = braceOpen; i < json.length(); i++) {
             char c = json.charAt(i);
             if (c == '"' && (i == 0 || json.charAt(i - 1) != '\\')) {
@@ -137,17 +152,12 @@ public class SlackWebhookProvider implements WebhookProvider {
                 } else if (c == '}') {
                     depth--;
                     if (depth == 0) {
-                        braceClose = i;
-                        break;
+                        return i;
                     }
                 }
             }
         }
-        if (braceClose < 0) {
-            return null;
-        }
-        String eventBlock = json.substring(braceOpen, braceClose + 1);
-        return WebhookProviderUtils.extractJsonField(eventBlock, fieldName);
+        return -1;
     }
 
     private void validateTimestamp(String timestamp) {

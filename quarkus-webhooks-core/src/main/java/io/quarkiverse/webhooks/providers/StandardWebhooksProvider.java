@@ -85,7 +85,12 @@ public class StandardWebhooksProvider implements WebhookProvider {
     public Map<String, String> sign(byte[] rawBody, String secret) {
         String webhookId = UUID.randomUUID().toString();
         long ts = Instant.now().getEpochSecond();
-        String rawSecret = secret.startsWith(SECRET_PREFIX) ? secret.substring(SECRET_PREFIX.length()) : secret;
+        String rawSecret;
+        if (secret.startsWith(SECRET_PREFIX)) {
+            rawSecret = secret.substring(SECRET_PREFIX.length());
+        } else {
+            rawSecret = secret;
+        }
         byte[] keyBytes;
         try {
             keyBytes = Base64.getDecoder().decode(rawSecret);

@@ -126,13 +126,20 @@ public class AdyenWebhookProvider implements WebhookProvider {
             return null;
         }
         int depth = 0;
+        boolean inString = false;
         for (int i = braceOpen; i < json.length(); i++) {
-            if (json.charAt(i) == '{') {
-                depth++;
-            } else if (json.charAt(i) == '}') {
-                depth--;
-                if (depth == 0) {
-                    return json.substring(braceOpen, i + 1);
+            char c = json.charAt(i);
+            if (c == '"' && (i == 0 || json.charAt(i - 1) != '\\')) {
+                inString = !inString;
+            }
+            if (!inString) {
+                if (c == '{') {
+                    depth++;
+                } else if (c == '}') {
+                    depth--;
+                    if (depth == 0) {
+                        return json.substring(braceOpen, i + 1);
+                    }
                 }
             }
         }
@@ -148,7 +155,26 @@ public class AdyenWebhookProvider implements WebhookProvider {
         if (braceOpen < 0) {
             return null;
         }
-        int braceClose = json.indexOf('}', braceOpen);
+        int depth = 0;
+        boolean inString = false;
+        int braceClose = -1;
+        for (int i = braceOpen; i < json.length(); i++) {
+            char c = json.charAt(i);
+            if (c == '"' && (i == 0 || json.charAt(i - 1) != '\\')) {
+                inString = !inString;
+            }
+            if (!inString) {
+                if (c == '{') {
+                    depth++;
+                } else if (c == '}') {
+                    depth--;
+                    if (depth == 0) {
+                        braceClose = i;
+                        break;
+                    }
+                }
+            }
+        }
         if (braceClose < 0) {
             return null;
         }
