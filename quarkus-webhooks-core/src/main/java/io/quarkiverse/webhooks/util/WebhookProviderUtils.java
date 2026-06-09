@@ -115,41 +115,56 @@ public final class WebhookProviderUtils {
             return null;
         }
         try {
-            String pattern = "\"" + Pattern.quote(fieldName) + "\"\\s*:\\s*"
-                    + "(?:\"((?:[^\"\\\\]|\\\\.)*)\"|([^,}\\]\\s][^,}\\]]*))";;
-            Matcher matcher = Pattern.compile(pattern).matcher(json);
+            Matcher matcher = buildFieldMatcher(json, fieldName);
+            if (matcher == null) {
+                return null;
+            }
+            return extractMatchedValue(matcher);
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static Matcher buildFieldMatcher(String json, String fieldName) {
+        String pattern = "\"" + Pattern.quote(fieldName) + "\"\\s*:\\s*"
+                + "(?:\"((?:[^\"\\\\]|\\\\.)*)\"|([^,}\\]\\s][^,}\\]]*))" ;
+        Matcher matcher = Pattern.compile(pattern).matcher(json);
+        if (!matcher.find()) {
+            return null;
+        }
+        if (isInsideString(json, matcher.start())) {
+            matcher.region(matcher.start() + 1, json.length());
             if (!matcher.find()) {
                 return null;
             }
-            int matchStart = matcher.start();
-            int unescapedQuotes = 0;
-            for (int i = 0; i < matchStart; i++) {
-                if (json.charAt(i) == '"' && (i == 0 || json.charAt(i - 1) != '\\')) {
-                    unescapedQuotes++;
-                }
-            }
-            if (unescapedQuotes % 2 != 0) {
-                matcher.region(matchStart + 1, json.length());
-                if (!matcher.find()) {
-                    return null;
-                }
-            }
-            String quoted = matcher.group(1);
-            String unquoted = matcher.group(2);
-            if (quoted != null) {
-                return unescapeJson(quoted);
-            }
-            if (unquoted != null) {
-                String trimmed = unquoted.trim();
-                if ("null".equals(trimmed)) {
-                    return null;
-                }
-                return trimmed;
-            }
-            return null;
-        } catch (Exception e) {
-            return null;
         }
+        return matcher;
+    }
+
+    private static boolean isInsideString(String json, int position) {
+        int unescapedQuotes = 0;
+        for (int i = 0; i < position; i++) {
+            if (json.charAt(i) == '"' && (i == 0 || json.charAt(i - 1) != '\\')) {
+                unescapedQuotes++;
+            }
+        }
+        return unescapedQuotes % 2 != 0;
+    }
+
+    private static String extractMatchedValue(Matcher matcher) {
+        String quoted = matcher.group(1);
+        if (quoted != null) {
+            return unescapeJson(quoted);
+        }
+        String unquoted = matcher.group(2);
+        if (unquoted != null) {
+            String trimmed = unquoted.trim();
+            if ("null".equals(trimmed)) {
+                return null;
+            }
+            return trimmed;
+        }
+        return null;
     }
 
     private static String unescapeJson(String s) {
