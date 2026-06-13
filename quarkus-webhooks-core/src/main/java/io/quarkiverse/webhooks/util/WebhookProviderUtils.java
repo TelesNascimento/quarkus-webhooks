@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * <h2>Constant-time comparison</h2>
  * <p>Use {@link #hexToBytesSafe(String)} combined with {@link java.security.MessageDigest#isEqual(byte[], byte[])}
  * to compare HMAC signatures without timing oracle. {@code hexToBytesSafe} always returns {@code byte[32]}
- * (HMAC-SHA256 output size) — returning zeros for invalid input — so {@code isEqual} always performs
+ * (HMAC-SHA256 output size) - returning zeros for invalid input - so {@code isEqual} always performs
  * a full 32-byte comparison regardless of input validity.</p>
  *
  * <h2>Header lookup</h2>

@@ -15,7 +15,7 @@
     <name>Quarkus Webhooks - Core</name>
     <description>
         Framework-agnostic webhook signature verification.
-        Zero runtime dependencies — pure java.base.
+        Zero runtime dependencies - pure java.base.
         Supports: Stripe, Adyen, Standard Webhooks.
     </description>
 

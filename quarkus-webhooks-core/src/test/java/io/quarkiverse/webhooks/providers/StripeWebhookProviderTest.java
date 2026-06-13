@@ -30,7 +30,7 @@ class StripeWebhookProviderTest {
     // --- HAPPY PATH ---
 
     @Test
-    @DisplayName("valid signature — does not throw")
+    @DisplayName("valid signature - does not throw")
     void validSignature_doesNotThrow() throws Exception {
         byte[] body = "{\"id\":\"evt_123\",\"type\":\"payment_intent.succeeded\"}".getBytes(StandardCharsets.UTF_8);
         long timestamp = Instant.now().getEpochSecond();
@@ -42,7 +42,7 @@ class StripeWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("multiple v1= signatures — any one valid is sufficient")
+    @DisplayName("multiple v1= signatures - any one valid is sufficient")
     void multipleSignatures_anyValidSuffices() throws Exception {
         byte[] body = "{\"id\":\"evt_456\"}".getBytes(StandardCharsets.UTF_8);
         long timestamp = Instant.now().getEpochSecond();
@@ -54,7 +54,7 @@ class StripeWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("case-insensitive header name — Stripe-Signature vs stripe-signature")
+    @DisplayName("case-insensitive header name - Stripe-Signature vs stripe-signature")
     void headerLookup_caseInsensitive() throws Exception {
         byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
         long timestamp = Instant.now().getEpochSecond();
@@ -69,7 +69,7 @@ class StripeWebhookProviderTest {
     // --- INVALID SIGNATURE ---
 
     @Test
-    @DisplayName("invalid signature — throws WebhookSignatureException")
+    @DisplayName("invalid signature - throws WebhookSignatureException")
     void invalidSignature_throwsException() {
         byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
         long timestamp = Instant.now().getEpochSecond();
@@ -82,7 +82,7 @@ class StripeWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("wrong secret — throws WebhookSignatureException")
+    @DisplayName("wrong secret - throws WebhookSignatureException")
     void wrongSecret_throwsException() throws Exception {
         byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
         long timestamp = Instant.now().getEpochSecond();
@@ -95,7 +95,7 @@ class StripeWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("missing header — throws WebhookSignatureException")
+    @DisplayName("missing header - throws WebhookSignatureException")
     void missingHeader_throwsException() {
         assertThatThrownBy(() ->
                 provider.verify("{}".getBytes(), Map.of(), SECRET)
@@ -104,7 +104,7 @@ class StripeWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("missing timestamp (t=) — throws WebhookSignatureException")
+    @DisplayName("missing timestamp (t=) - throws WebhookSignatureException")
     void missingTimestamp_throwsException() {
         Map<String, String> headers = Map.of("stripe-signature", "v1=abc123");
         assertThatThrownBy(() -> provider.verify("{}".getBytes(), headers, SECRET))
@@ -113,7 +113,7 @@ class StripeWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("no v1= signatures — throws WebhookSignatureException")
+    @DisplayName("no v1= signatures - throws WebhookSignatureException")
     void noV1Signatures_throwsException() {
         Map<String, String> headers = Map.of(
                 "stripe-signature", "t=" + Instant.now().getEpochSecond()
@@ -126,7 +126,7 @@ class StripeWebhookProviderTest {
     // --- REPLAY PROTECTION ---
 
     @Test
-    @DisplayName("expired timestamp — throws WebhookSignatureException")
+    @DisplayName("expired timestamp - throws WebhookSignatureException")
     void expiredTimestamp_throwsException() throws Exception {
         byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
         long oldTimestamp = Instant.now().getEpochSecond() - 600; // 10 minutes ago
@@ -140,7 +140,7 @@ class StripeWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("custom replay window — accepts within window, rejects outside")
+    @DisplayName("custom replay window - accepts within window, rejects outside")
     void customReplayWindow_enforcesWindow() throws Exception {
         // Provider with 60-second window (minimum allowed)
         StripeWebhookProvider strictProvider = new StripeWebhookProvider(60);
@@ -157,27 +157,27 @@ class StripeWebhookProviderTest {
     // --- METADATA EXTRACTION ---
 
     @Test
-    @DisplayName("extractEventId — returns id from JSON body")
+    @DisplayName("extractEventId - returns id from JSON body")
     void extractEventId_returnsId() {
         byte[] body = "{\"id\":\"evt_001\",\"type\":\"charge.succeeded\"}".getBytes(StandardCharsets.UTF_8);
         assertThat(provider.extractEventId(body, Map.of())).isEqualTo("evt_001");
     }
 
     @Test
-    @DisplayName("extractEventType — returns type from JSON body")
+    @DisplayName("extractEventType - returns type from JSON body")
     void extractEventType_returnsType() {
         byte[] body = "{\"id\":\"evt_001\",\"type\":\"charge.succeeded\"}".getBytes(StandardCharsets.UTF_8);
         assertThat(provider.extractEventType(body, Map.of())).isEqualTo("charge.succeeded");
     }
 
     @Test
-    @DisplayName("extractEventId — returns null for empty body")
+    @DisplayName("extractEventId - returns null for empty body")
     void extractEventId_emptyBody_returnsNull() {
         assertThat(provider.extractEventId("{}".getBytes(), Map.of())).isNull();
     }
 
     @Test
-    @DisplayName("name() — returns 'stripe'")
+    @DisplayName("name() - returns 'stripe'")
     void name_returnsStripe() {
         assertThat(provider.name()).isEqualTo("stripe");
     }

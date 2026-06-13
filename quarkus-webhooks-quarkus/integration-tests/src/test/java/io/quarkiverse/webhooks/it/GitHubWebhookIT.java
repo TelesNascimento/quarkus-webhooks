@@ -11,13 +11,13 @@ import java.nio.charset.StandardCharsets;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-@DisplayName("GitHub Webhook — Integration Tests")
+@DisplayName("GitHub Webhook - Integration Tests")
 class GitHubWebhookIT {
 
     private static final String GITHUB_SECRET = "test_github_secret_for_integration_tests";
 
     @Test
-    @DisplayName("GitHub — valid signature — route passes (no 401)")
+    @DisplayName("GitHub - valid signature - route passes (no 401)")
     void github_validSignature_notRejected() throws Exception {
         byte[] body = "{\"action\":\"opened\",\"issue\":{\"number\":1}}".getBytes(StandardCharsets.UTF_8);
         String hexHmac = githubHmac(body, GITHUB_SECRET);
@@ -35,7 +35,7 @@ class GitHubWebhookIT {
     }
 
     @Test
-    @DisplayName("GitHub — invalid signature — 401")
+    @DisplayName("GitHub - invalid signature - 401")
     void github_invalidSignature_returns401() {
         given()
                 .contentType("application/json")
@@ -49,7 +49,7 @@ class GitHubWebhookIT {
     }
 
     @Test
-    @DisplayName("GitHub — missing signature header — 401")
+    @DisplayName("GitHub - missing signature header - 401")
     void github_missingSignature_returns401() {
         given()
                 .contentType("application/json")

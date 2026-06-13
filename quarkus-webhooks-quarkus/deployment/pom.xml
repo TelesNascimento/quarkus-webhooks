@@ -31,13 +31,13 @@
             <artifactId>quarkus-core-deployment</artifactId>
         </dependency>
 
-        <!-- Arc (CDI) build items — AdditionalBeanBuildItem -->
+        <!-- Arc (CDI) build items - AdditionalBeanBuildItem -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc-deployment</artifactId>
         </dependency>
 
-        <!-- REST deployment — mirrors quarkus-rest in the runtime module -->
+        <!-- REST deployment - mirrors quarkus-rest in the runtime module -->
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-deployment</artifactId>

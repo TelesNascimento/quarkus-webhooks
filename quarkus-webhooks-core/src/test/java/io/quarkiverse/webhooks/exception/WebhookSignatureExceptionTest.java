@@ -17,7 +17,7 @@ class WebhookSignatureExceptionTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("isRuntimeException — deve estender RuntimeException")
+    @DisplayName("isRuntimeException - deve estender RuntimeException")
     void isRuntimeException() {
         WebhookSignatureException ex = new WebhookSignatureException(PROVIDER, REASON);
         assertThat(ex).isInstanceOf(RuntimeException.class);
@@ -28,14 +28,14 @@ class WebhookSignatureExceptionTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("storesProviderName — construtor armazena o provider")
+    @DisplayName("storesProviderName - construtor armazena o provider")
     void storesProviderName() {
         WebhookSignatureException ex = new WebhookSignatureException("adyen", REASON);
         assertThat(ex.getProvider()).isEqualTo("adyen");
     }
 
     @Test
-    @DisplayName("storesReason — construtor armazena o reason")
+    @DisplayName("storesReason - construtor armazena o reason")
     void storesReason() {
         WebhookSignatureException ex = new WebhookSignatureException(PROVIDER, "timestamp expirado");
         assertThat(ex.getReason()).isEqualTo("timestamp expirado");
@@ -46,7 +46,7 @@ class WebhookSignatureExceptionTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("messageContainsProviderAndReason — getMessage() inclui provider e reason")
+    @DisplayName("messageContainsProviderAndReason - getMessage() inclui provider e reason")
     void messageContainsProviderAndReason() {
         WebhookSignatureException ex = new WebhookSignatureException(PROVIDER, REASON);
         assertThat(ex.getMessage())
@@ -59,14 +59,14 @@ class WebhookSignatureExceptionTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("getProvider — retorna exatamente o valor passado no construtor")
+    @DisplayName("getProvider - retorna exatamente o valor passado no construtor")
     void getProvider_returnsProvider() {
         WebhookSignatureException ex = new WebhookSignatureException("standard", REASON);
         assertThat(ex.getProvider()).isEqualTo("standard");
     }
 
     @Test
-    @DisplayName("getReason — retorna exatamente o valor passado no construtor")
+    @DisplayName("getReason - retorna exatamente o valor passado no construtor")
     void getReason_returnsReason() {
         WebhookSignatureException ex = new WebhookSignatureException(PROVIDER, "header ausente");
         assertThat(ex.getReason()).isEqualTo("header ausente");
@@ -77,13 +77,13 @@ class WebhookSignatureExceptionTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("canBeCaughtAsRuntimeException — pode ser capturada como RuntimeException")
+    @DisplayName("canBeCaughtAsRuntimeException - pode ser capturada como RuntimeException")
     void canBeCaughtAsRuntimeException() {
         assertThatCode(() -> {
             try {
                 throw new WebhookSignatureException(PROVIDER, REASON);
             } catch (RuntimeException e) {
-                // capturada corretamente — não deve re-lançar
+                // capturada corretamente - não deve re-lançar
             }
         }).doesNotThrowAnyException();
     }
@@ -93,7 +93,7 @@ class WebhookSignatureExceptionTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("nullProvider — construtor aceita provider null sem NPE")
+    @DisplayName("nullProvider - construtor aceita provider null sem NPE")
     void nullProvider_handledGracefully() {
         assertThatCode(() -> {
             WebhookSignatureException ex = new WebhookSignatureException(null, REASON);
@@ -105,7 +105,7 @@ class WebhookSignatureExceptionTest {
     }
 
     @Test
-    @DisplayName("nullReason — construtor aceita reason null sem NPE")
+    @DisplayName("nullReason - construtor aceita reason null sem NPE")
     void nullReason_handledGracefully() {
         assertThatCode(() -> {
             WebhookSignatureException ex = new WebhookSignatureException(PROVIDER, null);

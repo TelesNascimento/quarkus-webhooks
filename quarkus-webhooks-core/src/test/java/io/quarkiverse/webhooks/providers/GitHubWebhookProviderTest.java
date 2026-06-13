@@ -51,7 +51,7 @@ class GitHubWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — missing sha256= prefix → WebhookSignatureException")
+    @DisplayName("verify() - missing sha256= prefix -> WebhookSignatureException")
     void verify_missingPrefix_throws() {
         byte[] body = validBody();
         byte[] hmac = WebhookProviderUtils.computeHmac(body, SECRET, "github");
@@ -69,14 +69,14 @@ class GitHubWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — wrong secret → WebhookSignatureException")
+    @DisplayName("verify() - wrong secret -> WebhookSignatureException")
     void verify_wrongSecret_throws() {
         assertThatThrownBy(() -> provider.verify(validBody(), validHeaders(), "wrong_secret"))
                 .isInstanceOf(WebhookSignatureException.class);
     }
 
     @Test
-    @DisplayName("verify() — body modified → WebhookSignatureException")
+    @DisplayName("verify() - body modified -> WebhookSignatureException")
     void verify_bodyModified_throws() {
         byte[] tamperedBody = "tampered".getBytes(StandardCharsets.UTF_8);
         assertThatThrownBy(() -> provider.verify(tamperedBody, validHeaders(), SECRET))
@@ -84,7 +84,7 @@ class GitHubWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — header case insensitive (lowercase) — passes")
+    @DisplayName("verify() - header case insensitive (lowercase) - passes")
     void verify_headerCaseInsensitive_passes() {
         byte[] body = validBody();
         byte[] hmac = WebhookProviderUtils.computeHmac(body, SECRET, "github");
@@ -96,7 +96,7 @@ class GitHubWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("extractEventId() — returns X-GitHub-Delivery header")
+    @DisplayName("extractEventId() - returns X-GitHub-Delivery header")
     void extractEventId_returnsDeliveryHeader() {
         String deliveryId = "abc-123-uuid";
         Map<String, String> headers = Map.of("X-GitHub-Delivery", deliveryId);
@@ -104,14 +104,14 @@ class GitHubWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("extractEventType() — returns X-GitHub-Event header")
+    @DisplayName("extractEventType() - returns X-GitHub-Event header")
     void extractEventType_returnsEventHeader() {
         Map<String, String> headers = Map.of("X-GitHub-Event", "push");
         assertThat(provider.extractEventType(validBody(), headers)).isEqualTo("push");
     }
 
     @Test
-    @DisplayName("sign() — roundtrip verifies successfully")
+    @DisplayName("sign() - roundtrip verifies successfully")
     void sign_roundtrip_verifiesSuccessfully() {
         byte[] body = validBody();
         Map<String, String> headers = provider.sign(body, SECRET);
@@ -119,7 +119,7 @@ class GitHubWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("sign() — header format contains sha256= prefix")
+    @DisplayName("sign() - header format contains sha256= prefix")
     void sign_headerFormat_containsSha256Prefix() {
         Map<String, String> headers = provider.sign(validBody(), SECRET);
         assertThat(headers).containsKey("X-Hub-Signature-256");

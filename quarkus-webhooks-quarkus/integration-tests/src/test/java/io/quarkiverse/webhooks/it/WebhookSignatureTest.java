@@ -16,11 +16,11 @@ import static org.hamcrest.Matchers.containsString;
 /**
  * Integration tests for webhook signature verification.
  *
- * Valid signature → NOT 401 (signature passed, route handler called ctx.next())
- * Invalid signature → 401 with JSON error body
+ * Valid signature -> NOT 401 (signature passed, route handler called ctx.next())
+ * Invalid signature -> 401 with JSON error body
  */
 @QuarkusTest
-@DisplayName("Webhook Signature — Integration Tests")
+@DisplayName("Webhook Signature - Integration Tests")
 class WebhookSignatureTest {
 
     private static final String STRIPE_SECRET = "whsec_test_secret_for_integration_tests";
@@ -32,7 +32,7 @@ class WebhookSignatureTest {
     // =========================================================================
 
     @Test
-    @DisplayName("Stripe — valid signature — route passes (no 401)")
+    @DisplayName("Stripe - valid signature - route passes (no 401)")
     void stripe_validSignature_notRejected() throws Exception {
         String body = "{\"id\":\"evt_001\",\"type\":\"payment_intent.succeeded\"}";
         long ts = Instant.now().getEpochSecond();
@@ -45,11 +45,11 @@ class WebhookSignatureTest {
         .when()
             .post("/webhooks/stripe")
         .then()
-            .statusCode(404); // valid → no 401; 404 = no JAX-RS endpoint downstream
+            .statusCode(404); // valid -> no 401; 404 = no JAX-RS endpoint downstream
     }
 
     @Test
-    @DisplayName("Stripe — invalid signature — 401")
+    @DisplayName("Stripe - invalid signature - 401")
     void stripe_invalidSignature_returns401() {
         given()
             .contentType("application/json")
@@ -63,7 +63,7 @@ class WebhookSignatureTest {
     }
 
     @Test
-    @DisplayName("Stripe — missing header — 401")
+    @DisplayName("Stripe - missing header - 401")
     void stripe_missingHeader_returns401() {
         given()
             .contentType("application/json")
@@ -75,7 +75,7 @@ class WebhookSignatureTest {
     }
 
     @Test
-    @DisplayName("Stripe — expired timestamp — 401")
+    @DisplayName("Stripe - expired timestamp - 401")
     void stripe_expiredTimestamp_returns401() throws Exception {
         String body = "{}";
         long old = Instant.now().getEpochSecond() - 600;
@@ -97,7 +97,7 @@ class WebhookSignatureTest {
     // =========================================================================
 
     @Test
-    @DisplayName("Adyen — valid HMAC — route passes (no 401)")
+    @DisplayName("Adyen - valid HMAC - route passes (no 401)")
     void adyen_validHmac_notRejected() throws Exception {
         String item = adyenItem("PSP-E2E-001", "", "MerchantIT", "Ref-001", "500", "EUR", "AUTHORISATION", "true");
         String hmac = adyenHmac(item, ADYEN_KEY_HEX);
@@ -109,11 +109,11 @@ class WebhookSignatureTest {
         .when()
             .post("/webhooks/adyen")
         .then()
-            .statusCode(404); // valid → no 401
+            .statusCode(404); // valid -> no 401
     }
 
     @Test
-    @DisplayName("Adyen — invalid HMAC — 401")
+    @DisplayName("Adyen - invalid HMAC - 401")
     void adyen_invalidHmac_returns401() {
         String item = adyenItem("PSP-BAD", "", "Merchant", "Ref", "100", "EUR", "AUTHORISATION", "true");
         String payload = adyenWrap(item, "d3JvbmdzaWduYXR1cmU="); // "wrongsignature" base64
@@ -132,7 +132,7 @@ class WebhookSignatureTest {
     // =========================================================================
 
     @Test
-    @DisplayName("Standard — valid signature — route passes (no 401)")
+    @DisplayName("Standard - valid signature - route passes (no 401)")
     void standard_validSignature_notRejected() throws Exception {
         String id = "msg_it_001";
         long ts = Instant.now().getEpochSecond();
@@ -148,11 +148,11 @@ class WebhookSignatureTest {
         .when()
             .post("/webhooks/standard")
         .then()
-            .statusCode(404); // valid → no 401
+            .statusCode(404); // valid -> no 401
     }
 
     @Test
-    @DisplayName("Standard — invalid signature — 401")
+    @DisplayName("Standard - invalid signature - 401")
     void standard_invalidSignature_returns401() {
         long ts = Instant.now().getEpochSecond();
         given()
@@ -172,7 +172,7 @@ class WebhookSignatureTest {
     // =========================================================================
 
     @Test
-    @DisplayName("Unknown provider — 404")
+    @DisplayName("Unknown provider - 404")
     void unknownProvider_returns404() {
         given()
             .contentType("application/json")
@@ -277,7 +277,7 @@ class WebhookSignatureTest {
             return "";
         }
         String block = json.substring(bo, bc + 1);
-        // Extract the field value — handles both strings and numbers
+        // Extract the field value - handles both strings and numbers
         String key = "\"" + sub + "\"";
         int ki = block.indexOf(key);
         if (ki < 0) {

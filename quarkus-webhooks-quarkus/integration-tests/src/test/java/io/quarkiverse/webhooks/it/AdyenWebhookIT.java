@@ -18,7 +18,7 @@ class AdyenWebhookIT {
     private static final String HMAC_KEY_HEX = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
 
     @Test
-    @DisplayName("POST /webhooks/adyen — valid HMAC — passes (not 401)")
+    @DisplayName("POST /webhooks/adyen - valid HMAC - passes (not 401)")
     void adyen_validHmac_passes() throws Exception {
         String notificationItem = buildItem("PSP-001", "", "MerchantTest", "OrderRef", "1000", "EUR", "AUTHORISATION", "true");
         String hmac = computeAdyenHmac(notificationItem);
@@ -30,11 +30,11 @@ class AdyenWebhookIT {
         .when()
             .post("/webhooks/adyen")
         .then()
-            .statusCode(404); // valid signature → passed through, no downstream endpoint
+            .statusCode(404); // valid signature -> passed through, no downstream endpoint
     }
 
     @Test
-    @DisplayName("POST /webhooks/adyen — wrong HMAC — 401")
+    @DisplayName("POST /webhooks/adyen - wrong HMAC - 401")
     void adyen_wrongHmac_returns401() {
         String notificationItem = buildItem("PSP-002", "", "MerchantTest", "OrderRef", "1000", "EUR", "AUTHORISATION", "true");
         String payload = wrapPayload(notificationItem, "aGVsbG8gd29ybGQ="); // wrong hmac

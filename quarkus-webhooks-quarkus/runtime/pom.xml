@@ -19,7 +19,7 @@
     </description>
 
     <dependencies>
-        <!-- Core library — framework-agnostic verification logic -->
+        <!-- Core library - framework-agnostic verification logic -->
         <dependency>
             <groupId>io.quarkiverse.webhooks</groupId>
             <artifactId>quarkus-webhooks-core</artifactId>
@@ -38,7 +38,7 @@
             <artifactId>quarkus-rest</artifactId>
         </dependency>
 
-        <!-- Vert.x Reactive Routes (@Route, @RouteBase, RoutingContext) — raw body BEFORE JAX-RS -->
+        <!-- Vert.x Reactive Routes (@Route, @RouteBase, RoutingContext) - raw body BEFORE JAX-RS -->
         <!-- In Quarkus 3.x, quarkus-vertx-web was renamed to quarkus-reactive-routes -->
         <dependency>
             <groupId>io.quarkus</groupId>

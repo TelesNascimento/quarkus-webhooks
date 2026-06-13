@@ -12,13 +12,13 @@ import java.util.Base64;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-@DisplayName("Shopify Webhook — Integration Tests")
+@DisplayName("Shopify Webhook - Integration Tests")
 class ShopifyWebhookIT {
 
     private static final String SHOPIFY_SECRET = "test_shopify_secret_for_integration_tests";
 
     @Test
-    @DisplayName("Shopify — valid signature — route passes (no 401)")
+    @DisplayName("Shopify - valid signature - route passes (no 401)")
     void shopify_validSignature_notRejected() throws Exception {
         byte[] body = "{\"id\":123,\"email\":\"test@example.com\"}".getBytes(StandardCharsets.UTF_8);
         String base64Hmac = shopifyHmac(body, SHOPIFY_SECRET);
@@ -36,7 +36,7 @@ class ShopifyWebhookIT {
     }
 
     @Test
-    @DisplayName("Shopify — invalid signature — 401")
+    @DisplayName("Shopify - invalid signature - 401")
     void shopify_invalidSignature_returns401() {
         given()
                 .contentType("application/json")
@@ -50,7 +50,7 @@ class ShopifyWebhookIT {
     }
 
     @Test
-    @DisplayName("Shopify — missing signature header — 401")
+    @DisplayName("Shopify - missing signature header - 401")
     void shopify_missingSignature_returns401() {
         given()
                 .contentType("application/json")

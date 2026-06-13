@@ -47,7 +47,7 @@ import static io.restassured.RestAssured.given;
  * }</pre>
  *
  * <p>Providers that support {@code sign()}: Stripe, GitHub, Shopify, Slack, Standard Webhooks.
- * Adyen is excluded — it uses non-standard field-based signing.</p>
+ * Adyen is excluded - it uses non-standard field-based signing.</p>
  */
 @ApplicationScoped
 public class MockWebhookSender {
@@ -89,7 +89,7 @@ public class MockWebhookSender {
     public ProviderBuilder provider(String name) {
         Iterable<WebhookProvider> source = explicitProviders != null ? explicitProviders : injectedProviders;
         if (source == null) {
-            throw new IllegalStateException("No providers available — inject MockWebhookSender via CDI or use the programmatic constructor");
+            throw new IllegalStateException("No providers available - inject MockWebhookSender via CDI or use the programmatic constructor");
         }
         for (WebhookProvider p : source) {
             if (p.name().equals(name)) {

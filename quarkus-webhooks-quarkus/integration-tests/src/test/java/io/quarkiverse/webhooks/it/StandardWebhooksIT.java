@@ -20,7 +20,7 @@ class StandardWebhooksIT {
     private static final String SECRET = "dGVzdC1zZWNyZXQta2V5LWZvci1zdGFuZGFyZC13aA==";
 
     @Test
-    @DisplayName("POST /webhooks/standard — valid signature — passes (not 401)")
+    @DisplayName("POST /webhooks/standard - valid signature - passes (not 401)")
     void standard_validSignature_passes() throws Exception {
         String id = "msg_test_001";
         long ts = Instant.now().getEpochSecond();
@@ -36,11 +36,11 @@ class StandardWebhooksIT {
         .when()
             .post("/webhooks/standard")
         .then()
-            .statusCode(404); // valid → passed through
+            .statusCode(404); // valid -> passed through
     }
 
     @Test
-    @DisplayName("POST /webhooks/standard — invalid signature — 401")
+    @DisplayName("POST /webhooks/standard - invalid signature - 401")
     void standard_invalidSignature_returns401() {
         long ts = Instant.now().getEpochSecond();
         given()

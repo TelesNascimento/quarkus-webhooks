@@ -31,7 +31,7 @@ class AdyenWebhookProviderTest {
     // --- HAPPY PATH ---
 
     @Test
-    @DisplayName("valid HMAC signature — does not throw")
+    @DisplayName("valid HMAC signature - does not throw")
     void validSignature_doesNotThrow() throws Exception {
         String notificationItem = buildNotificationItem(
                 "8414369581407235", "", "TestMerchant",
@@ -45,7 +45,7 @@ class AdyenWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("extractEventId — returns pspReference")
+    @DisplayName("extractEventId - returns pspReference")
     void extractEventId_returnsPspReference() throws Exception {
         String notificationItem = buildNotificationItem(
                 "PSP-REF-9999", "", "MerchantABC", "ORDER-42", "500", "GBP", "CAPTURE", "true"
@@ -58,7 +58,7 @@ class AdyenWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("extractEventType — returns eventCode")
+    @DisplayName("extractEventType - returns eventCode")
     void extractEventType_returnsEventCode() throws Exception {
         String notificationItem = buildNotificationItem(
                 "PSP-123", "", "MerchantXYZ", "REF-001", "100", "USD", "REFUND", "true"
@@ -73,7 +73,7 @@ class AdyenWebhookProviderTest {
     // --- INVALID SIGNATURE ---
 
     @Test
-    @DisplayName("wrong HMAC — throws WebhookSignatureException")
+    @DisplayName("wrong HMAC - throws WebhookSignatureException")
     void wrongHmac_throwsException() {
         String notificationItem = buildNotificationItem(
                 "PSP-001", "", "Merchant", "Ref", "100", "EUR", "AUTHORISATION", "true"
@@ -87,7 +87,7 @@ class AdyenWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("wrong key — throws WebhookSignatureException")
+    @DisplayName("wrong key - throws WebhookSignatureException")
     void wrongKey_throwsException() throws Exception {
         String notificationItem = buildNotificationItem(
                 "PSP-002", "", "Merchant", "Ref", "100", "EUR", "AUTHORISATION", "true"
@@ -101,7 +101,7 @@ class AdyenWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("invalid hex key — throws WebhookSignatureException")
+    @DisplayName("invalid hex key - throws WebhookSignatureException")
     void invalidHexKey_throwsException() throws Exception {
         String notificationItem = buildNotificationItem(
                 "PSP-003", "", "Merchant", "Ref", "100", "EUR", "AUTHORISATION", "true"
@@ -115,7 +115,7 @@ class AdyenWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("missing hmacSignature in additionalData — throws WebhookSignatureException")
+    @DisplayName("missing hmacSignature in additionalData - throws WebhookSignatureException")
     void missingHmacField_throwsException() {
         String payload = """
                 {"notificationItems":[{"NotificationRequestItem":{
@@ -131,7 +131,7 @@ class AdyenWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("no NotificationRequestItem — throws WebhookSignatureException")
+    @DisplayName("no NotificationRequestItem - throws WebhookSignatureException")
     void noNotificationItem_throwsException() {
         String payload = "{\"notificationItems\":[]}";
         assertThatThrownBy(() -> provider.verify(payload.getBytes(StandardCharsets.UTF_8), Map.of(), HMAC_KEY_HEX))
@@ -142,7 +142,7 @@ class AdyenWebhookProviderTest {
     // --- DATA-TO-SIGN ---
 
     @Test
-    @DisplayName("buildDataToSign — joins fields in exact order with ':'")
+    @DisplayName("buildDataToSign - joins fields in exact order with ':'")
     void buildDataToSign_correctFieldOrder() {
         String item = buildNotificationItem(
                 "psp1", "origRef1", "merchant1", "ref1", "500", "EUR", "AUTHORISATION", "true"
@@ -152,7 +152,7 @@ class AdyenWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("buildDataToSign — empty originalReference is empty string not null")
+    @DisplayName("buildDataToSign - empty originalReference is empty string not null")
     void buildDataToSign_emptyOriginalReference() {
         String item = buildNotificationItem(
                 "psp2", "", "merchant2", "ref2", "100", "GBP", "CAPTURE", "true"
@@ -162,7 +162,7 @@ class AdyenWebhookProviderTest {
     }
 
     @Test
-    @DisplayName("name() — returns 'adyen'")
+    @DisplayName("name() - returns 'adyen'")
     void name_returnsAdyen() {
         assertThat(provider.name()).isEqualTo("adyen");
     }
@@ -170,9 +170,9 @@ class AdyenWebhookProviderTest {
     // --- BRACE-IN-STRING BUG ---
 
     @Test
-    @DisplayName("extractEventType() — NotificationRequestItem with braces in description field")
+    @DisplayName("extractEventType() - NotificationRequestItem with braces in description field")
     void extractEventType_bracesInDescription_extractsCorrectly() {
-        // Descrição contém {} — bug antigo: extrai errado; correção: extrai correto
+        // Descrição contém {} - bug antigo: extrai errado; correção: extrai correto
         String json = "{\"notificationItems\":[{\"NotificationRequestItem\":{" +
                 "\"pspReference\":\"PSPR-001\"," +
                 "\"originalReference\":\"\"," +

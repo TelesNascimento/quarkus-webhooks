@@ -58,7 +58,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — valid signature and current timestamp — passes")
+    @DisplayName("verify() - valid signature and current timestamp - passes")
     void verify_validSignatureCurrentTimestamp_passes() {
         assertThatCode(() -> provider.verify(validBody(), validHeaders(), SECRET))
                 .doesNotThrowAnyException();
@@ -72,7 +72,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — missing X-Slack-Signature → WebhookSignatureException")
+    @DisplayName("verify() - missing X-Slack-Signature -> WebhookSignatureException")
     void verify_missingSignatureHeader_throws() {
         Map<String, String> headers = Map.of(
                 "X-Slack-Request-Timestamp", String.valueOf(Instant.now().getEpochSecond()));
@@ -81,7 +81,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — missing X-Slack-Request-Timestamp → WebhookSignatureException")
+    @DisplayName("verify() - missing X-Slack-Request-Timestamp -> WebhookSignatureException")
     void verify_missingTimestampHeader_throws() {
         long ts = Instant.now().getEpochSecond();
         String signedContent = "v0:" + ts + ":" + new String(validBody(), StandardCharsets.UTF_8);
@@ -94,7 +94,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — expired timestamp (6 min ago) → WebhookSignatureException")
+    @DisplayName("verify() - expired timestamp (6 min ago) -> WebhookSignatureException")
     void verify_expiredTimestamp_throws() {
         long oldTs = Instant.now().getEpochSecond() - 360;
         Map<String, String> headers = buildSlackHeaders(validBody(), SECRET, oldTs);
@@ -104,7 +104,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — future timestamp (6 min ahead) → WebhookSignatureException")
+    @DisplayName("verify() - future timestamp (6 min ahead) -> WebhookSignatureException")
     void verify_futureTimestamp_throws() {
         long futureTs = Instant.now().getEpochSecond() + 360;
         Map<String, String> headers = buildSlackHeaders(validBody(), SECRET, futureTs);
@@ -114,7 +114,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — negative timestamp → WebhookSignatureException")
+    @DisplayName("verify() - negative timestamp -> WebhookSignatureException")
     void verify_negativeTimestamp_throws() {
         long ts = Instant.now().getEpochSecond();
         String signedContent = "v0:" + ts + ":" + new String(validBody(), StandardCharsets.UTF_8);
@@ -129,7 +129,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — missing v0= prefix in signature → WebhookSignatureException")
+    @DisplayName("verify() - missing v0= prefix in signature -> WebhookSignatureException")
     void verify_missingV0Prefix_throws() {
         long ts = Instant.now().getEpochSecond();
         String signedContent = "v0:" + ts + ":" + new String(validBody(), StandardCharsets.UTF_8);
@@ -144,14 +144,14 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — wrong secret → WebhookSignatureException")
+    @DisplayName("verify() - wrong secret -> WebhookSignatureException")
     void verify_wrongSecret_throws() {
         assertThatThrownBy(() -> provider.verify(validBody(), validHeaders(), "wrong_secret"))
                 .isInstanceOf(WebhookSignatureException.class);
     }
 
     @Test
-    @DisplayName("verify() — body modified → WebhookSignatureException")
+    @DisplayName("verify() - body modified -> WebhookSignatureException")
     void verify_bodyModified_throws() {
         byte[] tamperedBody = "tampered".getBytes(StandardCharsets.UTF_8);
         assertThatThrownBy(() -> provider.verify(tamperedBody, validHeaders(), SECRET))
@@ -159,7 +159,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — header case insensitive — passes")
+    @DisplayName("verify() - header case insensitive - passes")
     void verify_headerCaseInsensitive_passes() {
         long ts = Instant.now().getEpochSecond();
         String bodyStr = new String(validBody(), StandardCharsets.UTF_8);
@@ -173,7 +173,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — replay window boundary (exactly 5 min ago) — passes")
+    @DisplayName("verify() - replay window boundary (exactly 5 min ago) - passes")
     void verify_atBoundary5MinutesAgo_passes() {
         long boundaryTs = Instant.now().getEpochSecond() - 300;
         Map<String, String> headers = buildSlackHeaders(validBody(), SECRET, boundaryTs);
@@ -181,7 +181,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("sign() — roundtrip verifies successfully")
+    @DisplayName("sign() - roundtrip verifies successfully")
     void sign_roundtrip_verifiesSuccessfully() {
         byte[] body = validBody();
         Map<String, String> headers = provider.sign(body, SECRET);
@@ -189,7 +189,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("sign() — header format contains v0= prefix")
+    @DisplayName("sign() - header format contains v0= prefix")
     void sign_headerFormat_containsV0Prefix() {
         Map<String, String> headers = provider.sign(validBody(), SECRET);
         assertThat(headers).containsKey("X-Slack-Signature");
@@ -198,14 +198,14 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("extractEventType() — url_verification payload — returns 'url_verification'")
+    @DisplayName("extractEventType() - url_verification payload - returns 'url_verification'")
     void extractEventType_urlVerification_returnsUrlVerification() {
         byte[] body = "{\"type\":\"url_verification\",\"challenge\":\"abc123\"}".getBytes(StandardCharsets.UTF_8);
         assertThat(provider.extractEventType(body, Map.of())).isEqualTo("url_verification");
     }
 
     @Test
-    @DisplayName("extractEventType() — event_callback payload → returns inner event.type")
+    @DisplayName("extractEventType() - event_callback payload -> returns inner event.type")
     void extractEventType_eventCallback_returnsInnerEventType() {
         byte[] body = "{\"type\":\"event_callback\",\"event\":{\"type\":\"message\",\"text\":\"hi\"}}"
                 .getBytes(StandardCharsets.UTF_8);
@@ -213,7 +213,7 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("extractEventType() — event_callback without inner type — returns 'event_callback'")
+    @DisplayName("extractEventType() - event_callback without inner type - returns 'event_callback'")
     void extractEventType_eventCallbackNoInnerType_returnsEventCallback() {
         byte[] body = "{\"type\":\"event_callback\",\"event\":{\"text\":\"hi\"}}"
                 .getBytes(StandardCharsets.UTF_8);
@@ -222,14 +222,14 @@ class SlackWebhookProviderTest extends WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("SlackWebhookProvider() — replay window too small → IllegalArgumentException")
+    @DisplayName("SlackWebhookProvider() - replay window too small -> IllegalArgumentException")
     void constructor_replayWindowTooSmall_throws() {
         assertThatThrownBy(() -> new SlackWebhookProvider(30))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    @DisplayName("SlackWebhookProvider() — replay window too large → IllegalArgumentException")
+    @DisplayName("SlackWebhookProvider() - replay window too large -> IllegalArgumentException")
     void constructor_replayWindowTooLarge_throws() {
         assertThatThrownBy(() -> new SlackWebhookProvider(4000))
                 .isInstanceOf(IllegalArgumentException.class);

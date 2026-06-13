@@ -34,7 +34,7 @@ class StandardWebhooksProviderTest {
     // --- HAPPY PATH ---
 
     @Test
-    @DisplayName("valid signature — does not throw")
+    @DisplayName("valid signature - does not throw")
     void validSignature_doesNotThrow() throws Exception {
         byte[] body = "{\"type\":\"user.created\",\"data\":{\"id\":\"usr_001\"}}".getBytes();
         String id = "msg_abc123";
@@ -50,7 +50,7 @@ class StandardWebhooksProviderTest {
     }
 
     @Test
-    @DisplayName("secret with whsec_ prefix — stripped and verified correctly")
+    @DisplayName("secret with whsec_ prefix - stripped and verified correctly")
     void secretWithPrefix_strippedCorrectly() throws Exception {
         byte[] body = "{}".getBytes();
         String id = "msg_prefix";
@@ -62,12 +62,12 @@ class StandardWebhooksProviderTest {
                 "webhook-timestamp", String.valueOf(ts),
                 "webhook-signature", "v1," + sig
         );
-        // Secret has whsec_ prefix — should be stripped before use
+        // Secret has whsec_ prefix - should be stripped before use
         assertThatCode(() -> provider.verify(body, headers, SECRET_WITH_PREFIX)).doesNotThrowAnyException();
     }
 
     @Test
-    @DisplayName("multiple v1 signatures — any valid passes")
+    @DisplayName("multiple v1 signatures - any valid passes")
     void multipleSignatures_anyValidPasses() throws Exception {
         byte[] body = "{}".getBytes();
         String id = "msg_multi";
@@ -101,7 +101,7 @@ class StandardWebhooksProviderTest {
     // --- INVALID ---
 
     @Test
-    @DisplayName("wrong secret — throws")
+    @DisplayName("wrong secret - throws")
     void wrongSecret_throws() throws Exception {
         byte[] body = "{}".getBytes();
         String id = "msg_wrong";
@@ -117,7 +117,7 @@ class StandardWebhooksProviderTest {
     }
 
     @Test
-    @DisplayName("missing webhook-id — throws")
+    @DisplayName("missing webhook-id - throws")
     void missingId_throws() {
         long ts = Instant.now().getEpochSecond();
         Map<String, String> headers = Map.of("webhook-timestamp", String.valueOf(ts), "webhook-signature", "v1,abc");
@@ -126,7 +126,7 @@ class StandardWebhooksProviderTest {
     }
 
     @Test
-    @DisplayName("missing webhook-timestamp — throws")
+    @DisplayName("missing webhook-timestamp - throws")
     void missingTimestamp_throws() {
         Map<String, String> headers = Map.of("webhook-id", "msg_001", "webhook-signature", "v1,abc");
         assertThatThrownBy(() -> provider.verify("{}".getBytes(), headers, SECRET_BASE64))
@@ -134,7 +134,7 @@ class StandardWebhooksProviderTest {
     }
 
     @Test
-    @DisplayName("missing webhook-signature — throws")
+    @DisplayName("missing webhook-signature - throws")
     void missingSignature_throws() {
         long ts = Instant.now().getEpochSecond();
         Map<String, String> headers = Map.of("webhook-id", "msg_001", "webhook-timestamp", String.valueOf(ts));
@@ -143,7 +143,7 @@ class StandardWebhooksProviderTest {
     }
 
     @Test
-    @DisplayName("expired timestamp — throws")
+    @DisplayName("expired timestamp - throws")
     void expiredTimestamp_throws() throws Exception {
         byte[] body = "{}".getBytes();
         String id = "msg_old";
@@ -156,7 +156,7 @@ class StandardWebhooksProviderTest {
     }
 
     @Test
-    @DisplayName("invalid Base64 secret — throws")
+    @DisplayName("invalid Base64 secret - throws")
     void invalidSecret_throws() {
         long ts = Instant.now().getEpochSecond();
         Map<String, String> headers = Map.of(

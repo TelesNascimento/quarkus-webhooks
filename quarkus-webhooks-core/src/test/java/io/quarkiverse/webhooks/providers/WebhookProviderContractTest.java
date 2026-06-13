@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public abstract class WebhookProviderContractTest {
 
     // -------------------------------------------------------------------------
-    // Métodos de fábrica — implementar na subclasse
+    // Métodos de fábrica - implementar na subclasse
     // -------------------------------------------------------------------------
 
     /** Retorna uma instância nova do provider sendo testado. */
@@ -73,19 +73,19 @@ public abstract class WebhookProviderContractTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("name() — não deve retornar null")
+    @DisplayName("name() - não deve retornar null")
     void name_isNotNull() {
         assertThat(provider.name()).isNotNull();
     }
 
     @Test
-    @DisplayName("name() — não deve retornar string vazia ou em branco")
+    @DisplayName("name() - não deve retornar string vazia ou em branco")
     void name_isNotBlank() {
         assertThat(provider.name()).isNotBlank();
     }
 
     @Test
-    @DisplayName("name() — deve igualar o nome esperado pelo contrato")
+    @DisplayName("name() - deve igualar o nome esperado pelo contrato")
     void name_equalsExpected() {
         assertThat(provider.name()).isEqualTo(expectedProviderName());
     }
@@ -95,7 +95,7 @@ public abstract class WebhookProviderContractTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("verify() — entrada válida não deve lançar exceção")
+    @DisplayName("verify() - entrada válida não deve lançar exceção")
     void verify_validInput_doesNotThrow() {
         assertThatCode(() ->
                 provider.verify(validBody(), validHeaders(), validSecret())
@@ -103,23 +103,23 @@ public abstract class WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("verify() — corpo null deve lançar exceção ou ser tratado graciosamente")
+    @DisplayName("verify() - corpo null deve lançar exceção ou ser tratado graciosamente")
     void verify_nullBody_throwsOrHandlesGracefully() {
         // Providers podem lançar WebhookSignatureException, NullPointerException,
-        // ou outra RuntimeException — qualquer resposta controlada é aceita.
+        // ou outra RuntimeException - qualquer resposta controlada é aceita.
         // O que NÃO é aceito: retornar silenciosamente sem verificar.
         try {
             provider.verify(null, validHeaders(), validSecret());
             // Se chegou aqui, o provider optou por aceitar null body sem verificar.
             // Documentar: o provider aceita null body sem verificação.
         } catch (Exception e) {
-            // Qualquer exceção é aceitável — o provider sinalizou o problema.
+            // Qualquer exceção é aceitável - o provider sinalizou o problema.
             assertThat(e).isInstanceOf(Exception.class);
         }
     }
 
     @Test
-    @DisplayName("verify() — headers vazios devem lançar WebhookSignatureException")
+    @DisplayName("verify() - headers vazios devem lançar WebhookSignatureException")
     void verify_emptyHeaders_throwsSignatureException() {
         assertThatThrownBy(() ->
                 provider.verify(validBody(), Collections.emptyMap(), validSecret())
@@ -131,7 +131,7 @@ public abstract class WebhookProviderContractTest {
     // -------------------------------------------------------------------------
 
     @Test
-    @DisplayName("extractEventId() — não deve lançar exceção com entrada válida")
+    @DisplayName("extractEventId() - não deve lançar exceção com entrada válida")
     void extractEventId_doesNotThrow() {
         assertThatCode(() ->
                 provider.extractEventId(validBody(), validHeaders())
@@ -139,7 +139,7 @@ public abstract class WebhookProviderContractTest {
     }
 
     @Test
-    @DisplayName("extractEventType() — não deve lançar exceção com entrada válida")
+    @DisplayName("extractEventType() - não deve lançar exceção com entrada válida")
     void extractEventType_doesNotThrow() {
         assertThatCode(() ->
                 provider.extractEventType(validBody(), validHeaders())

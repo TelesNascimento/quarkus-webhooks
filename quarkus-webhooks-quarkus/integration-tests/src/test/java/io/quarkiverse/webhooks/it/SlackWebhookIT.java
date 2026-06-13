@@ -12,13 +12,13 @@ import java.time.Instant;
 import static io.restassured.RestAssured.given;
 
 @QuarkusTest
-@DisplayName("Slack Webhook — Integration Tests")
+@DisplayName("Slack Webhook - Integration Tests")
 class SlackWebhookIT {
 
     private static final String SLACK_SECRET = "test_slack_secret_for_integration_tests";
 
     @Test
-    @DisplayName("Slack — valid signature and current timestamp — route passes")
+    @DisplayName("Slack - valid signature and current timestamp - route passes")
     void slack_validSignature_notRejected() throws Exception {
         String body = "{\"type\":\"event_callback\",\"event\":{\"type\":\"message\"}}";
         long ts = Instant.now().getEpochSecond();
@@ -36,7 +36,7 @@ class SlackWebhookIT {
     }
 
     @Test
-    @DisplayName("Slack — invalid signature — 401")
+    @DisplayName("Slack - invalid signature - 401")
     void slack_invalidSignature_returns401() {
         given()
                 .contentType("application/json")
@@ -50,7 +50,7 @@ class SlackWebhookIT {
     }
 
     @Test
-    @DisplayName("Slack — expired timestamp — 401")
+    @DisplayName("Slack - expired timestamp - 401")
     void slack_expiredTimestamp_returns401() throws Exception {
         String body = "{}";
         long oldTs = Instant.now().getEpochSecond() - 360;
@@ -68,7 +68,7 @@ class SlackWebhookIT {
     }
 
     @Test
-    @DisplayName("Slack — missing signature header — 401")
+    @DisplayName("Slack - missing signature header - 401")
     void slack_missingSignature_returns401() {
         given()
                 .contentType("application/json")
