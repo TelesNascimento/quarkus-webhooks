@@ -30,14 +30,14 @@ class AdyenWebhookIT {
         .when()
             .post("/webhooks/adyen")
         .then()
-            .statusCode(404); // valid signature -> passed through, no downstream endpoint
+            .statusCode(404);
     }
 
     @Test
     @DisplayName("POST /webhooks/adyen - wrong HMAC - 401")
     void adyen_wrongHmac_returns401() {
         String notificationItem = buildItem("PSP-002", "", "MerchantTest", "OrderRef", "1000", "EUR", "AUTHORISATION", "true");
-        String payload = wrapPayload(notificationItem, "aGVsbG8gd29ybGQ="); // wrong hmac
+        String payload = wrapPayload(notificationItem, "aGVsbG8gd29ybGQ=");
 
         given()
             .contentType("application/json")
@@ -58,7 +58,7 @@ class AdyenWebhookIT {
     }
 
     private String computeAdyenHmac(String item) throws Exception {
-        // Fields in exact order
+
         String[] parts = {
             extract(item, "pspReference"), extract(item, "originalReference"),
             extract(item, "merchantAccountCode"), extract(item, "merchantReference"),
@@ -88,11 +88,11 @@ class AdyenWebhookIT {
         while (s < json.length() && Character.isWhitespace(json.charAt(s))) s++;
         if (s >= json.length()) return "";
         if (json.charAt(s) == '"') {
-            // string value
+
             int e = json.indexOf('"', s + 1);
             return e < 0 ? "" : json.substring(s + 1, e);
         } else {
-            // numeric or boolean value
+
             int e = s;
             while (e < json.length() && ",}]".indexOf(json.charAt(e)) < 0) e++;
             return json.substring(s, e).trim();

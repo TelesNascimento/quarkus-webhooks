@@ -9,21 +9,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Shared cryptographic and parsing utilities for {@link io.quarkiverse.webhooks.WebhookProvider} implementations.
- *
- * <p>All methods in this class are stateless and thread-safe.</p>
- *
- * <h2>Constant-time comparison</h2>
- * <p>Use {@link #hexToBytesSafe(String)} combined with {@link java.security.MessageDigest#isEqual(byte[], byte[])}
- * to compare HMAC signatures without timing oracle. {@code hexToBytesSafe} always returns {@code byte[32]}
- * (HMAC-SHA256 output size) - returning zeros for invalid input - so {@code isEqual} always performs
- * a full 32-byte comparison regardless of input validity.</p>
- *
- * <h2>Header lookup</h2>
- * <p>HTTP headers are case-insensitive per RFC 7230. Use {@link #findHeader(java.util.Map, String)}
- * for case-insensitive lookups instead of {@code headers.get(name)}.</p>
- */
 public final class WebhookProviderUtils {
 
     private static final String HMAC_SHA256 = "HmacSHA256";

@@ -27,8 +27,6 @@ class StripeWebhookProviderTest {
         provider = new StripeWebhookProvider();
     }
 
-    // --- HAPPY PATH ---
-
     @Test
     @DisplayName("valid signature - does not throw")
     void validSignature_doesNotThrow() throws Exception {
@@ -59,14 +57,12 @@ class StripeWebhookProviderTest {
         byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
         long timestamp = Instant.now().getEpochSecond();
         String sig = computeStripeSignature(timestamp, body, SECRET);
-        // Header in uppercase
+
         Map<String, String> headers = Map.of(
                 "Stripe-Signature", "t=" + timestamp + ",v1=" + sig
         );
         assertThatCode(() -> provider.verify(body, headers, SECRET)).doesNotThrowAnyException();
     }
-
-    // --- INVALID SIGNATURE ---
 
     @Test
     @DisplayName("invalid signature - throws WebhookSignatureException")
@@ -123,13 +119,11 @@ class StripeWebhookProviderTest {
                 .hasMessageContaining("no v1= signatures");
     }
 
-    // --- REPLAY PROTECTION ---
-
     @Test
     @DisplayName("expired timestamp - throws WebhookSignatureException")
     void expiredTimestamp_throwsException() throws Exception {
         byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
-        long oldTimestamp = Instant.now().getEpochSecond() - 600; // 10 minutes ago
+        long oldTimestamp = Instant.now().getEpochSecond() - 600;
         String sig = computeStripeSignature(oldTimestamp, body, SECRET);
         Map<String, String> headers = Map.of(
                 "stripe-signature", "t=" + oldTimestamp + ",v1=" + sig
@@ -142,10 +136,10 @@ class StripeWebhookProviderTest {
     @Test
     @DisplayName("custom replay window - accepts within window, rejects outside")
     void customReplayWindow_enforcesWindow() throws Exception {
-        // Provider with 60-second window (minimum allowed)
+
         StripeWebhookProvider strictProvider = new StripeWebhookProvider(60);
         byte[] body = "{}".getBytes(StandardCharsets.UTF_8);
-        long oldTimestamp = Instant.now().getEpochSecond() - 70; // 70s ago, outside 60s window
+        long oldTimestamp = Instant.now().getEpochSecond() - 70;
         String sig = computeStripeSignature(oldTimestamp, body, SECRET);
         Map<String, String> headers = Map.of(
                 "stripe-signature", "t=" + oldTimestamp + ",v1=" + sig
@@ -153,8 +147,6 @@ class StripeWebhookProviderTest {
         assertThatThrownBy(() -> strictProvider.verify(body, headers, SECRET))
                 .isInstanceOf(WebhookSignatureException.class);
     }
-
-    // --- METADATA EXTRACTION ---
 
     @Test
     @DisplayName("extractEventId - returns id from JSON body")
@@ -181,8 +173,6 @@ class StripeWebhookProviderTest {
     void name_returnsStripe() {
         assertThat(provider.name()).isEqualTo("stripe");
     }
-
-    // --- HELPER ---
 
     private String computeStripeSignature(long timestamp, byte[] body, String secret) throws Exception {
         String signedPayload = timestamp + "." + new String(body, StandardCharsets.UTF_8);

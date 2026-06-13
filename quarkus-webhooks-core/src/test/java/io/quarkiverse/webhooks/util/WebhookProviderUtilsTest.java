@@ -16,10 +16,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("WebhookProviderUtils")
 class WebhookProviderUtilsTest {
 
-    // -------------------------------------------------------------------------
-    // findHeader
-    // -------------------------------------------------------------------------
-
     @Nested
     @DisplayName("findHeader")
     class FindHeader {
@@ -67,10 +63,6 @@ class WebhookProviderUtilsTest {
                     .isEqualTo("msg_001");
         }
     }
-
-    // -------------------------------------------------------------------------
-    // hexToBytesSafe
-    // -------------------------------------------------------------------------
 
     @Nested
     @DisplayName("hexToBytesSafe")
@@ -137,10 +129,6 @@ class WebhookProviderUtilsTest {
         }
     }
 
-    // -------------------------------------------------------------------------
-    // computeHmac
-    // -------------------------------------------------------------------------
-
     @Nested
     @DisplayName("computeHmac")
     class ComputeHmac {
@@ -191,10 +179,6 @@ class WebhookProviderUtilsTest {
             assertThat(first).isEqualTo(second);
         }
     }
-
-    // -------------------------------------------------------------------------
-    // extractJsonField
-    // -------------------------------------------------------------------------
 
     @Nested
     @DisplayName("extractJsonField")

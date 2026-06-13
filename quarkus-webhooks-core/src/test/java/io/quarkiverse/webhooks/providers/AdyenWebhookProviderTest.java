@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("AdyenWebhookProvider")
 class AdyenWebhookProviderTest {
 
-    // Real test HMAC key from Adyen docs (hex-encoded)
     private static final String HMAC_KEY_HEX = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
 
     private AdyenWebhookProvider provider;
@@ -27,8 +26,6 @@ class AdyenWebhookProviderTest {
     void setUp() {
         provider = new AdyenWebhookProvider();
     }
-
-    // --- HAPPY PATH ---
 
     @Test
     @DisplayName("valid HMAC signature - does not throw")
@@ -70,15 +67,13 @@ class AdyenWebhookProviderTest {
                 .isEqualTo("REFUND");
     }
 
-    // --- INVALID SIGNATURE ---
-
     @Test
     @DisplayName("wrong HMAC - throws WebhookSignatureException")
     void wrongHmac_throwsException() {
         String notificationItem = buildNotificationItem(
                 "PSP-001", "", "Merchant", "Ref", "100", "EUR", "AUTHORISATION", "true"
         );
-        String wrongHmac = "aGVsbG8gd29ybGQ="; // "hello world" base64
+        String wrongHmac = "aGVsbG8gd29ybGQ=";
         String payload = wrapInAdyenPayload(notificationItem, wrongHmac);
 
         assertThatThrownBy(() -> provider.verify(payload.getBytes(StandardCharsets.UTF_8), Map.of(), HMAC_KEY_HEX))
@@ -139,8 +134,6 @@ class AdyenWebhookProviderTest {
                 .hasMessageContaining("no NotificationRequestItem");
     }
 
-    // --- DATA-TO-SIGN ---
-
     @Test
     @DisplayName("buildDataToSign - joins fields in exact order with ':'")
     void buildDataToSign_correctFieldOrder() {
@@ -167,12 +160,10 @@ class AdyenWebhookProviderTest {
         assertThat(provider.name()).isEqualTo("adyen");
     }
 
-    // --- BRACE-IN-STRING BUG ---
-
     @Test
     @DisplayName("extractEventType() - NotificationRequestItem with braces in description field")
     void extractEventType_bracesInDescription_extractsCorrectly() {
-        // Descrição contém {} - bug antigo: extrai errado; correção: extrai correto
+
         String json = "{\"notificationItems\":[{\"NotificationRequestItem\":{" +
                 "\"pspReference\":\"PSPR-001\"," +
                 "\"originalReference\":\"\"," +
@@ -182,12 +173,10 @@ class AdyenWebhookProviderTest {
                 "\"eventCode\":\"AUTHORISATION\"," +
                 "\"success\":\"true\"," +
                 "\"additionalData\":{\"hmacSignature\":\"ignored\"}}}]}";
-        // Não deve lançar exceção e deve retornar o eventCode correto
+
         String eventType = new AdyenWebhookProvider().extractEventType(json.getBytes(StandardCharsets.UTF_8), Map.of());
         assertThat(eventType).isEqualTo("AUTHORISATION");
     }
-
-    // --- HELPERS ---
 
     private String buildNotificationItem(String pspRef, String origRef, String merchantCode,
                                           String merchantRef, String amountValue, String currency,
@@ -205,10 +194,9 @@ class AdyenWebhookProviderTest {
     }
 
     private String computeAdyenHmac(String hmacKeyHex, String notificationItemJson) throws Exception {
-        // Build data-to-sign using the provider's own method
+
         String dataToSign = provider.buildDataToSign(notificationItemJson);
 
-        // Decode hex key
         byte[] keyBytes = new byte[hmacKeyHex.length() / 2];
         for (int i = 0; i < hmacKeyHex.length(); i += 2) {
             keyBytes[i / 2] = (byte) Integer.parseInt(hmacKeyHex.substring(i, i + 2), 16);
@@ -221,7 +209,7 @@ class AdyenWebhookProviderTest {
     }
 
     private String wrapInAdyenPayload(String notificationItemJson, String hmacSignature) {
-        // Inject hmacSignature into additionalData
+
         String itemWithHmac = notificationItemJson.replace(
                 "\"success\":",
                 "\"additionalData\": {\"hmacSignature\": \"" + hmacSignature + "\"}, \"success\":"

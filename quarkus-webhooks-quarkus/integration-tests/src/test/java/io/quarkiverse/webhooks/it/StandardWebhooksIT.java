@@ -16,7 +16,6 @@ import static io.restassured.RestAssured.given;
 @DisplayName("Standard Webhooks Integration Tests")
 class StandardWebhooksIT {
 
-    // Base64-encoded key matching application.properties
     private static final String SECRET = "dGVzdC1zZWNyZXQta2V5LWZvci1zdGFuZGFyZC13aA==";
 
     @Test
@@ -36,7 +35,7 @@ class StandardWebhooksIT {
         .when()
             .post("/webhooks/standard")
         .then()
-            .statusCode(404); // valid -> passed through
+            .statusCode(404);
     }
 
     @Test

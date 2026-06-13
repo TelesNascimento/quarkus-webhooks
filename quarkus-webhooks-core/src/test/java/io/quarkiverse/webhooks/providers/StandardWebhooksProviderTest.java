@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @DisplayName("StandardWebhooksProvider")
 class StandardWebhooksProviderTest {
 
-    // Base64-encoded 32-byte key
     private static final String SECRET_BASE64 = Base64.getEncoder()
             .encodeToString("test-secret-key-for-standard-wh".getBytes(StandardCharsets.UTF_8));
     private static final String SECRET_WITH_PREFIX = "whsec_" + SECRET_BASE64;
@@ -30,8 +29,6 @@ class StandardWebhooksProviderTest {
     void setUp() {
         provider = new StandardWebhooksProvider();
     }
-
-    // --- HAPPY PATH ---
 
     @Test
     @DisplayName("valid signature - does not throw")
@@ -62,7 +59,7 @@ class StandardWebhooksProviderTest {
                 "webhook-timestamp", String.valueOf(ts),
                 "webhook-signature", "v1," + sig
         );
-        // Secret has whsec_ prefix - should be stripped before use
+
         assertThatCode(() -> provider.verify(body, headers, SECRET_WITH_PREFIX)).doesNotThrowAnyException();
     }
 
@@ -97,8 +94,6 @@ class StandardWebhooksProviderTest {
         );
         assertThatCode(() -> provider.verify(body, headers, SECRET_BASE64)).doesNotThrowAnyException();
     }
-
-    // --- INVALID ---
 
     @Test
     @DisplayName("wrong secret - throws")
@@ -165,8 +160,6 @@ class StandardWebhooksProviderTest {
                 .isInstanceOf(WebhookSignatureException.class).hasMessageContaining("Base64");
     }
 
-    // --- METADATA ---
-
     @Test
     @DisplayName("extractEventId returns webhook-id header")
     void extractEventId_returnsWebhookId() {
@@ -186,8 +179,6 @@ class StandardWebhooksProviderTest {
     void name_returnsStandard() {
         assertThat(provider.name()).isEqualTo("standard");
     }
-
-    // --- HELPER ---
 
     private String computeSignature(String id, long timestamp, byte[] body, String secretBase64) throws Exception {
         byte[] key = Base64.getDecoder().decode(secretBase64);

@@ -13,12 +13,6 @@ import java.util.Base64;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.containsString;
 
-/**
- * Integration tests for webhook signature verification.
- *
- * Valid signature -> NOT 401 (signature passed, route handler called ctx.next())
- * Invalid signature -> 401 with JSON error body
- */
 @QuarkusTest
 @DisplayName("Webhook Signature - Integration Tests")
 class WebhookSignatureTest {
@@ -26,10 +20,6 @@ class WebhookSignatureTest {
     private static final String STRIPE_SECRET = "whsec_test_secret_for_integration_tests";
     private static final String ADYEN_KEY_HEX = "0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20";
     private static final String STD_SECRET_B64 = "dGVzdC1zZWNyZXQta2V5LWZvci1zdGFuZGFyZC13aA==";
-
-    // =========================================================================
-    // STRIPE
-    // =========================================================================
 
     @Test
     @DisplayName("Stripe - valid signature - route passes (no 401)")
@@ -45,7 +35,7 @@ class WebhookSignatureTest {
         .when()
             .post("/webhooks/stripe")
         .then()
-            .statusCode(404); // valid -> no 401; 404 = no JAX-RS endpoint downstream
+            .statusCode(404);
     }
 
     @Test
@@ -92,10 +82,6 @@ class WebhookSignatureTest {
             .body(containsString("webhook_signature_invalid"));
     }
 
-    // =========================================================================
-    // ADYEN
-    // =========================================================================
-
     @Test
     @DisplayName("Adyen - valid HMAC - route passes (no 401)")
     void adyen_validHmac_notRejected() throws Exception {
@@ -109,14 +95,14 @@ class WebhookSignatureTest {
         .when()
             .post("/webhooks/adyen")
         .then()
-            .statusCode(404); // valid -> no 401
+            .statusCode(404);
     }
 
     @Test
     @DisplayName("Adyen - invalid HMAC - 401")
     void adyen_invalidHmac_returns401() {
         String item = adyenItem("PSP-BAD", "", "Merchant", "Ref", "100", "EUR", "AUTHORISATION", "true");
-        String payload = adyenWrap(item, "d3JvbmdzaWduYXR1cmU="); // "wrongsignature" base64
+        String payload = adyenWrap(item, "d3JvbmdzaWduYXR1cmU=");
 
         given()
             .contentType("application/json")
@@ -126,10 +112,6 @@ class WebhookSignatureTest {
         .then()
             .statusCode(401);
     }
-
-    // =========================================================================
-    // STANDARD WEBHOOKS
-    // =========================================================================
 
     @Test
     @DisplayName("Standard - valid signature - route passes (no 401)")
@@ -148,7 +130,7 @@ class WebhookSignatureTest {
         .when()
             .post("/webhooks/standard")
         .then()
-            .statusCode(404); // valid -> no 401
+            .statusCode(404);
     }
 
     @Test
@@ -167,10 +149,6 @@ class WebhookSignatureTest {
             .statusCode(401);
     }
 
-    // =========================================================================
-    // UNKNOWN PROVIDER
-    // =========================================================================
-
     @Test
     @DisplayName("Unknown provider - 404")
     void unknownProvider_returns404() {
@@ -183,10 +161,6 @@ class WebhookSignatureTest {
             .statusCode(404)
             .body(containsString("unknown_provider"));
     }
-
-    // =========================================================================
-    // HELPERS
-    // =========================================================================
 
     private String stripeHmac(long ts, String body, String secret) throws Exception {
         String signed = ts + "." + body;
@@ -218,7 +192,7 @@ class WebhookSignatureTest {
     }
 
     private String adyenHmac(String item, String keyHex) throws Exception {
-        // Fields in exact Adyen order
+
         String[] fields = {
             jsonStr(item, "pspReference"), jsonStr(item, "originalReference"),
             jsonStr(item, "merchantAccountCode"), jsonStr(item, "merchantReference"),
@@ -277,7 +251,7 @@ class WebhookSignatureTest {
             return "";
         }
         String block = json.substring(bo, bc + 1);
-        // Extract the field value - handles both strings and numbers
+
         String key = "\"" + sub + "\"";
         int ki = block.indexOf(key);
         if (ki < 0) {
